@@ -6,94 +6,81 @@ const StaffTasks = () => {
   const { tasks, updateTaskStatus } = useHotel();
 
   return (
-    <div className="flex bg-primary min-h-screen">
+    <div className="flex bg-background min-h-screen font-body text-on-surface">
       <Sidebar />
-      <main className="ml-64 flex-1 h-screen overflow-y-auto bg-[#000e24] flex flex-col">
-        <header className="p-8 flex justify-between items-end">
+      <main className="ml-64 flex-1 h-screen overflow-y-auto flex flex-col">
+        <header className="p-8 lg:p-12 flex justify-between items-end bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-outline-variant/20">
           <div>
-            <span className="text-secondary font-label text-xs uppercase tracking-widest mb-2 block">Current Shift: Morning</span>
-            <h1 className="text-4xl text-on-primary font-semibold font-headline">Assigned Tasks</h1>
-            <p className="text-on-primary-container mt-2 font-body max-w-md">Overview of your priority maintenance and housekeeping objectives for floor 4 and 5.</p>
+            <span className="text-secondary font-label text-[10px] uppercase tracking-widest mb-2 block font-bold">Priority Objectives</span>
+            <h1 className="text-4xl text-primary font-semibold font-headline">Task Distribution</h1>
+            <p className="text-on-surface-variant mt-2 font-medium max-w-md text-sm">Real-time oversight of floor-level maintenance and service requests.</p>
           </div>
-          <div className="flex gap-4">
-            <div className="bg-primary-container p-6 rounded-xl border border-white/5 flex flex-col items-center min-w-[120px]">
+          <div className="flex gap-6">
+            <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 flex flex-col items-center min-w-[120px] shadow-sm">
               <span className="text-secondary text-2xl font-semibold">{tasks.length}</span>
-              <span className="text-[10px] uppercase tracking-tighter text-on-primary-container">Total Tasks</span>
+              <span className="text-[9px] uppercase tracking-widest font-bold text-on-surface-variant opacity-60">Total Active</span>
             </div>
-            <div className="bg-primary-container p-6 rounded-xl border border-white/5 flex flex-col items-center min-w-[120px]">
-              <span className="text-on-primary text-2xl font-semibold">
-                {tasks.filter(t => t.status === 'In Progress' || t.status === 'Assigned').length}
+            <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 flex flex-col items-center min-w-[120px] shadow-sm">
+              <span className="text-primary text-2xl font-semibold">
+                {tasks.filter(t => t.status === 'In Progress').length}
               </span>
-              <span className="text-[10px] uppercase tracking-tighter text-on-primary-container">Pending</span>
+              <span className="text-[9px] uppercase tracking-widest font-bold text-on-surface-variant opacity-60">Working</span>
             </div>
           </div>
         </header>
 
-        <div className="px-8 pb-12 flex-grow grid grid-cols-12 gap-6">
-          <section className="col-span-12 xl:col-span-8 space-y-4">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className={`bg-primary-container/40 backdrop-blur-sm rounded-xl p-6 border-l-4 ${
-                  task.priority === 'Emergency' ? 'border-error' : 'border-secondary'
-                } flex items-center justify-between group hover:bg-primary-container/60 transition-all ${
-                  task.status === 'Completed' ? 'opacity-50' : ''
-                }`}
-              >
-                <div className="flex items-center space-x-6">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    task.priority === 'Emergency' ? 'bg-error/10 text-error' : 'bg-secondary/10 text-secondary'
-                  }`}>
-                    <span className="material-symbols-outlined">
-                      {task.category === 'Maintenance' ? 'handyman' : 'cleaning_services'}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-3 mb-1">
-                      <h3 className="text-lg text-white font-serif">{task.title}</h3>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-label uppercase tracking-wider ${
-                        task.priority === 'Emergency' ? 'bg-error/20 text-error' : 'bg-secondary/20 text-secondary'
+        <div className="px-8 lg:px-12 py-10">
+          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl overflow-hidden shadow-editorial">
+            <table className="w-full text-left">
+              <thead className="bg-surface-container-low/30 border-b border-outline-variant/15">
+                <tr className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">
+                  <th className="px-8 py-4">Task Detail</th>
+                  <th className="px-8 py-4">Category</th>
+                  <th className="px-8 py-4">Priority</th>
+                  <th className="px-8 py-4">Status</th>
+                  <th className="px-8 py-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/10">
+                {tasks.map((task) => (
+                  <tr key={task.id} className={`hover:bg-surface-container-low/20 transition-colors ${task.status === 'Completed' ? 'opacity-40' : ''}`}>
+                    <td className="px-8 py-6">
+                      <div className="font-bold text-primary text-sm">{task.title}</div>
+                      <div className="text-[10px] text-on-surface-variant uppercase font-bold opacity-40 mt-1">{task.time}</div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className="text-xs font-medium text-on-surface-variant">{task.category}</span>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest ${
+                        task.priority === 'Emergency' ? 'bg-error/10 text-error' : 'bg-secondary/10 text-secondary'
                       }`}>
                         {task.priority}
                       </span>
-                    </div>
-                    <p className="text-sm text-on-primary-container">
-                      Status: {task.status} • {task.time}
-                    </p>
-                  </div>
-                </div>
-                {task.status !== 'Completed' && (
-                  <button
-                    onClick={() => updateTaskStatus(task.id, 'Completed')}
-                    className="bg-secondary text-on-secondary px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-on-secondary-container transition-colors flex items-center space-x-2"
-                  >
-                    <span>Complete</span>
-                    <span className="material-symbols-outlined text-sm">check_circle</span>
-                  </button>
-                )}
-              </div>
-            ))}
-          </section>
-
-          <aside className="col-span-12 xl:col-span-4 space-y-6">
-            <div className="bg-secondary-container rounded-xl p-6 relative overflow-hidden">
-              <h4 className="text-on-secondary-container font-label text-xs uppercase tracking-widest mb-4">Shift Efficiency</h4>
-              <div className="flex items-end space-x-2 mb-2">
-                <span className="text-4xl font-serif font-bold text-on-secondary-container">84%</span>
-              </div>
-              <div className="w-full bg-on-secondary/30 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-on-secondary-container h-full w-[84%]"></div>
-              </div>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-              <h4 className="text-secondary font-label text-xs uppercase tracking-widest mb-4 flex items-center">
-                <span className="material-symbols-outlined text-sm mr-2">campaign</span>
-                Staff Briefing
-              </h4>
-              <p className="text-sm text-slate-300 italic">"VIP Arrival at 14:00. Please ensure all corridors on floor 5 are cleared of utility carts by 13:30."</p>
-            </div>
-          </aside>
+                    </td>
+                    <td className="px-8 py-6">
+                       <div className="flex items-center gap-2">
+                         <div className={`w-2 h-2 rounded-full ${task.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></div>
+                         <span className="text-xs font-bold text-on-surface uppercase tracking-tighter">{task.status}</span>
+                       </div>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      {task.status !== 'Completed' ? (
+                        <button
+                          onClick={() => updateTaskStatus(task.id, 'Completed')}
+                          className="text-secondary hover:text-amber-700 font-bold text-[10px] uppercase tracking-widest border border-secondary/20 px-4 py-2 rounded-lg transition-all"
+                        >
+                          Resolve
+                        </button>
+                      ) : (
+                        <span className="material-symbols-outlined text-emerald-600">verified</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
