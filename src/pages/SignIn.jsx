@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -16,9 +16,10 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-8 flex flex-col items-center justify-center bg-background">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-xl p-10 editorial-shadow">
+    <div className="min-h-screen flex items-center justify-center bg-background px-8">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10 editorial-shadow">
         <div className="text-center mb-10">
+          <Link to="/" className="font-serif text-2xl text-primary block mb-6">Gloria Hotel</Link>
           <h1 className="font-headline text-3xl text-primary mb-2">Welcome Back</h1>
           <p className="text-on-surface-variant font-body">Sign in to manage your reservations</p>
         </div>
@@ -75,7 +76,7 @@ const SignIn = () => {
 
         <div className="mt-8 pt-8 border-t border-outline-variant/30 text-center">
           <p className="text-on-surface-variant text-sm">
-            Don't have an account? <a href="#" className="text-secondary font-semibold hover:underline">Join Membership</a>
+            Don't have an account? <Link to="/signup" className="text-secondary font-semibold hover:underline">Join Membership</Link>
           </p>
         </div>
       </div>
