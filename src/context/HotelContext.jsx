@@ -11,6 +11,7 @@ export const useHotel = () => {
 };
 
 export const HotelProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [reservations, setReservations] = useState([
     { id: 1, name: "Michael Henderson", roomType: "Deluxe Kigali Suite", status: "Settled", price: "$2,450.00", dates: "Oct 12 - Oct 15", guest: "Michael Henderson", room: "Deluxe Kigali Suite", amount: 2450.00, date: "2024-10-12" },
     { id: 2, name: "Lara Zhukov", roomType: "Garden View Single", status: "Pending", price: "$420.00", dates: "Oct 13 - Oct 14", guest: "Lara Zhukov", room: "Garden View Single", amount: 420.00, date: "2024-10-13" },
@@ -75,8 +76,28 @@ export const HotelProvider = ({ children }) => {
     setTasks(prev => prev.map(task => task.id === id ? { ...task, status } : task));
   };
 
+  const login = (email, password) => {
+    // Simulate role-based auth
+    if (email.includes('admin')) {
+      setUser({ email, role: 'admin' });
+    } else if (email.includes('manager')) {
+      setUser({ email, role: 'manager' });
+    } else if (email.includes('receptionist')) {
+      setUser({ email, role: 'receptionist' });
+    } else if (email.includes('staff')) {
+      setUser({ email, role: 'staff' });
+    } else {
+      setUser({ email, role: 'guest' });
+    }
+  };
+
+  const logout = () => setUser(null);
+
   return (
     <HotelContext.Provider value={{
+      user,
+      login,
+      logout,
       reservations,
       diningReservations,
       eventInquiries,

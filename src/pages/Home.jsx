@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useHotel } from '../context/HotelContext';
+import SEO from '../components/SEO';
 
 const Home = () => {
   const { addReservation } = useHotel();
@@ -21,6 +22,7 @@ const Home = () => {
 
   return (
     <main>
+      <SEO title="Luxury Hospitality" description="Experience the pinnacle of hospitality in the heart of Kigali." />
       {/* Hero Section */}
       <section className="relative h-[921px] min-h-[600px] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -37,9 +39,9 @@ const Home = () => {
             <p className="text-surface-container-high text-lg mb-10 font-body leading-relaxed opacity-90">
               High-altitude luxury meets local heart. Discover an editorial escape overlooking the vibrant hills of Kigali.
             </p>
-            <div className="flex gap-4">
-              <button className="bg-secondary text-on-secondary px-8 py-4 rounded-lg font-medium transition-all hover:bg-on-secondary-container shadow-xl">Explore Our Story</button>
-              <Link to="/rooms" className="border border-white/30 backdrop-blur-md text-white px-8 py-4 rounded-lg font-medium hover:bg-white/10 transition-all">View Suites</Link>
+            <div className="flex flex-wrap gap-4">
+              <Link to="/rooms" className="bg-secondary text-on-secondary px-8 py-4 rounded-lg font-medium transition-all hover:bg-on-secondary-container shadow-xl">Book a Room</Link>
+              <button className="border border-white/30 backdrop-blur-md text-white px-8 py-4 rounded-lg font-medium hover:bg-white/10 transition-all">Explore Our Story</button>
             </div>
           </div>
         </div>

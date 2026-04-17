@@ -17,15 +17,56 @@ const NewBooking = () => {
     specialRequests: ''
   });
 
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.guest) newErrors.guest = "Guest name is required";
+    if (!formData.checkIn) newErrors.checkIn = "Check-in date is required";
+    if (!formData.checkOut) newErrors.checkOut = "Check-out date is required";
+    if (formData.checkIn && formData.checkOut && new Date(formData.checkIn) >= new Date(formData.checkOut)) {
+      newErrors.checkOut = "Check-out must be after check-in";
+    }
+    if (!formData.amount || formData.amount <= 0) newErrors.amount = "Invalid amount";
+    return newErrors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    addReservation({
-      ...formData,
-      amount: parseFloat(formData.amount) || 0,
-      type: 'Room'
-    });
-    navigate('/admin/reservations');
+    const newErrors = validate();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      addReservation({
+        ...formData,
+        amount: parseFloat(formData.amount) || 0,
+        type: 'Room'
+      });
+      setIsSubmitting(false);
+      setSuccess(true);
+      setTimeout(() => navigate('/admin/reservations'), 2000);
+    }, 1000);
   };
+
+  if (success) {
+    return (
+      <div className="flex bg-background min-h-screen font-body items-center justify-center">
+        <div className="text-center p-12 bg-white rounded-2xl shadow-editorial border border-outline-variant/30 max-w-md mx-auto">
+          <span className="material-symbols-outlined text-emerald-500 text-6xl mb-4 animate-bounce">check_circle</span>
+          <h2 className="font-headline text-3xl text-primary mb-2">Booking Created</h2>
+          <p className="text-on-surface-variant mb-6">Reservation for {formData.guest} has been successfully added to the manifest.</p>
+          <p className="text-[10px] text-secondary font-bold uppercase tracking-widest">Redirecting to reservations...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -38,21 +79,24 @@ const NewBooking = () => {
 
         <form onSubmit={handleSubmit} className="bg-surface-container-lowest rounded-2xl p-10 border border-outline-variant/30 shadow-editorial space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Guest Full Name</label>
               <input
-                required
                 type="text"
-                placeholder="e.g. Michael Henderson"
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
+                placeholder="Michael Henderson"
+                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.guest ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all`}
                 value={formData.guest}
-                onChange={(e) => setFormData({...formData, guest: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, guest: e.target.value});
+                  if (errors.guest) setErrors({...errors, guest: null});
+                }}
               />
+              {errors.guest && <p className="text-[10px] text-error font-bold">{errors.guest}</p>}
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Room Category</label>
               <select
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
+                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm"
                 value={formData.room}
                 onChange={(e) => setFormData({...formData, room: e.target.value})}
               >
@@ -62,66 +106,65 @@ const NewBooking = () => {
                 <option>Savannah Suite</option>
               </select>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Check-In Date</label>
               <input
-                required
                 type="date"
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
+                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.checkIn ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm`}
                 value={formData.checkIn}
-                onChange={(e) => setFormData({...formData, checkIn: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, checkIn: e.target.value});
+                  if (errors.checkIn) setErrors({...errors, checkIn: null});
+                }}
               />
+              {errors.checkIn && <p className="text-[10px] text-error font-bold">{errors.checkIn}</p>}
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Check-Out Date</label>
               <input
-                required
                 type="date"
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
+                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.checkOut ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm`}
                 value={formData.checkOut}
-                onChange={(e) => setFormData({...formData, checkOut: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, checkOut: e.target.value});
+                  if (errors.checkOut) setErrors({...errors, checkOut: null});
+                }}
               />
+              {errors.checkOut && <p className="text-[10px] text-error font-bold">{errors.checkOut}</p>}
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Total Rate (USD)</label>
               <input
-                required
                 type="number"
                 placeholder="0.00"
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
+                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.amount ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm`}
                 value={formData.amount}
-                onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, amount: e.target.value});
+                  if (errors.amount) setErrors({...errors, amount: null});
+                }}
               />
+              {errors.amount && <p className="text-[10px] text-error font-bold">{errors.amount}</p>}
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Email Address</label>
               <input
                 type="email"
                 placeholder="guest@example.com"
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
+                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
               />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Special Requests & Notes</label>
-            <textarea
-              rows="4"
-              placeholder="Allergies, late arrival, extra towels..."
-              className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
-              value={formData.specialRequests}
-              onChange={(e) => setFormData({...formData, specialRequests: e.target.value})}
-            ></textarea>
-          </div>
-
           <div className="flex gap-4 pt-6 border-t border-outline-variant/15">
             <button
               type="submit"
-              className="flex-1 bg-primary text-on-primary py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:brightness-110 transition-all shadow-lg shadow-primary/10"
+              disabled={isSubmitting}
+              className="flex-1 bg-primary text-on-primary py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:brightness-110 transition-all shadow-lg disabled:opacity-50"
             >
-              Confirm Reservation
+              {isSubmitting ? 'Processing...' : 'Confirm Reservation'}
             </button>
             <button
               type="button"

@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useHotel } from '../context/HotelContext';
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useHotel();
   const [formData, setFormData] = useState({ email: '', password: '' });
+
+  const from = location.state?.from?.pathname || "/dashboard";
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simulate login
-    if (formData.email.includes('admin')) {
-      navigate('/admin');
-    } else {
-      navigate('/');
-    }
+    login(formData.email, formData.password);
+    navigate(from, { replace: true });
   };
 
   return (

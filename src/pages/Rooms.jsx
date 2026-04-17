@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useHotel } from '../context/HotelContext';
+import SEO from '../components/SEO';
 
 const Rooms = () => {
   const { addReservation } = useHotel();
@@ -19,6 +20,7 @@ const Rooms = () => {
 
   return (
     <main className="relative">
+      <SEO title="Rooms & Suites" description="Exquisite sanctuaries and luxurious suites in the heart of Kigali." />
       {successMessage && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-secondary text-on-secondary px-6 py-3 rounded-full shadow-2xl font-medium animate-bounce">
           {successMessage}

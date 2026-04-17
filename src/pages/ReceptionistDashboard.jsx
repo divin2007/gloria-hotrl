@@ -1,15 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 import { Link } from 'react-router-dom';
+import { SkeletonCard, SkeletonTable } from '../components/LoadingSkeleton';
+import Modal from '../components/Modal';
 
 const ReceptionistDashboard = () => {
   const { reservations, diningReservations, updateReservationStatus } = useHotel();
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRes, setSelectedRes] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const pendingRooms = reservations.filter(res => res.status === 'Pending');
   const pendingDining = diningReservations.filter(res => res.status === 'Pending');
-
   const allPending = [...pendingRooms, ...pendingDining].sort((a, b) => a.id - b.id);
+
+  const handleAction = (res, status) => {
+    setSelectedRes({ ...res, nextStatus: status });
+    setModalOpen(true);
+  };
+
+  const confirmAction = () => {
+    updateReservationStatus(selectedRes.id, selectedRes.nextStatus);
+    setModalOpen(false);
+    setSelectedRes(null);
+  };
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -24,20 +44,13 @@ const ReceptionistDashboard = () => {
             <Link to="/admin/new-booking" className="bg-primary text-on-primary px-6 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-primary/10">
               New Booking
             </Link>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-primary font-bold text-sm">Jean-Luc H.</p>
-                <p className="text-on-surface-variant text-[10px] font-bold uppercase opacity-60">Duty Receptionist</p>
-              </div>
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary/20 bg-surface-container-high flex items-center justify-center text-secondary">
-                <span className="material-symbols-outlined">person</span>
-              </div>
+            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary/20 bg-surface-container-high flex items-center justify-center text-secondary">
+              <span className="material-symbols-outlined">person</span>
             </div>
           </div>
         </header>
 
         <div className="grid grid-cols-12 gap-10">
-          {/* Pending Reservations Column */}
           <section className="col-span-12 lg:col-span-8 space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="font-headline text-xl text-primary">Arrivals Requiring Approval</h3>
@@ -47,7 +60,7 @@ const ReceptionistDashboard = () => {
             </div>
 
             <div className="space-y-4">
-              {allPending.length > 0 ? allPending.map((res) => (
+              {loading ? <SkeletonTable rows={3} /> : allPending.length > 0 ? allPending.map((res) => (
                 <div key={`${res.type || 'Room'}-${res.id}`} className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 flex items-start gap-6 shadow-editorial transition-all hover:bg-surface-container-low/20">
                   <div className="w-24 h-24 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden text-secondary">
                     {res.type === 'Dining' ? (
@@ -68,13 +81,13 @@ const ReceptionistDashboard = () => {
                     </p>
                     <div className="flex gap-3">
                       <button
-                        onClick={() => updateReservationStatus(res.id, 'Settled')}
+                        onClick={() => handleAction(res, 'Settled')}
                         className="bg-secondary px-6 py-2 rounded text-on-secondary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all"
                       >
                         Approve
                       </button>
                       <button
-                        onClick={() => updateReservationStatus(res.id, 'Declined')}
+                        onClick={() => handleAction(res, 'Declined')}
                         className="bg-transparent border border-outline/30 px-6 py-2 rounded text-on-surface-variant text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container-low transition-all"
                       >
                         Decline
@@ -91,7 +104,6 @@ const ReceptionistDashboard = () => {
             </div>
           </section>
 
-          {/* Daily Flow Column */}
           <section className="col-span-12 lg:col-span-4 space-y-8">
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
@@ -131,16 +143,23 @@ const ReceptionistDashboard = () => {
                 ))}
               </div>
             </div>
-
-            <div className="bg-secondary/5 p-8 rounded-xl border-2 border-dashed border-secondary/20 flex flex-col items-center justify-center text-center">
-              <span className="material-symbols-outlined text-secondary text-4xl mb-4">support_agent</span>
-              <h4 className="font-headline text-primary mb-2">Concierge Support</h4>
-              <p className="text-xs text-on-surface-variant mb-6 leading-relaxed">Direct line to facility housekeeping and maintenance teams.</p>
-              <Link to="/staff/tasks" className="text-secondary text-[10px] font-bold uppercase tracking-widest border-b border-secondary hover:border-b-2 transition-all">Relay Request</Link>
-            </div>
           </section>
         </div>
       </main>
+
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Confirm Action"
+        actions={
+          <>
+            <button onClick={confirmAction} className="flex-1 bg-secondary text-on-secondary py-3 rounded-lg font-bold uppercase text-[10px] tracking-widest">Confirm</button>
+            <button onClick={() => setModalOpen(false)} className="flex-1 bg-surface-container-high text-on-surface-variant py-3 rounded-lg font-bold uppercase text-[10px] tracking-widest">Cancel</button>
+          </>
+        }
+      >
+        Are you sure you want to <strong>{selectedRes?.nextStatus === 'Settled' ? 'Approve' : 'Decline'}</strong> the reservation for <strong>{selectedRes?.guest}</strong>?
+      </Modal>
     </div>
   );
 };

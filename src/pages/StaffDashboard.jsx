@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 import { Link } from 'react-router-dom';
+import { SkeletonLine } from '../components/LoadingSkeleton';
+import Modal from '../components/Modal';
 
 const StaffDashboard = () => {
   const { tasks, updateTaskStatus } = useHotel();
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleComplete = (task) => {
+    setSelectedTask(task);
+    setModalOpen(true);
+  };
+
+  const confirmComplete = () => {
+    updateTaskStatus(selectedTask.id, 'Completed');
+    setModalOpen(false);
+    setSelectedTask(null);
+  };
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -37,7 +58,11 @@ const StaffDashboard = () => {
               <Link to="/admin/maintenance-log" className="text-[10px] text-secondary font-bold uppercase tracking-widest hover:underline border border-secondary/20 px-3 py-1 rounded-full">Log New Issue</Link>
             </div>
             <div className="space-y-4">
-              {tasks.map((task) => (
+              {loading ? [...Array(4)].map((_, i) => (
+                <div key={i} className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 shadow-editorial">
+                  <SkeletonLine className="h-10 w-full" />
+                </div>
+              )) : tasks.length > 0 ? tasks.map((task) => (
                 <div
                   key={task.id}
                   className={`bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 flex items-center justify-between group hover:bg-surface-container-low/20 transition-all shadow-editorial ${
@@ -68,7 +93,7 @@ const StaffDashboard = () => {
                   </div>
                   {task.status !== 'Completed' ? (
                     <button
-                      onClick={() => updateTaskStatus(task.id, 'Completed')}
+                      onClick={() => handleComplete(task)}
                       className="bg-secondary text-on-secondary px-6 py-3 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all flex items-center space-x-2 shadow-lg shadow-secondary/10"
                     >
                       <span>Complete</span>
@@ -81,7 +106,11 @@ const StaffDashboard = () => {
                     </span>
                   )}
                 </div>
-              ))}
+              )) : (
+                <div className="p-16 text-center bg-surface-container-low/20 rounded-xl border-2 border-dashed border-outline-variant/40">
+                  <p className="text-on-surface-variant font-medium uppercase tracking-widest text-sm">No tasks assigned.</p>
+                </div>
+              )}
             </div>
           </section>
 
@@ -107,10 +136,6 @@ const StaffDashboard = () => {
                   <span className="text-[8px] text-on-surface-variant font-bold uppercase block mb-2 opacity-60">General Manager</span>
                   <p className="text-sm text-on-surface italic leading-relaxed">"VIP Arrival at 14:00. Please ensure all corridors on floor 5 are cleared of utility carts by 13:30."</p>
                 </div>
-                <div>
-                  <span className="text-[8px] text-on-surface-variant font-bold uppercase block mb-2 opacity-60">Duty Receptionist</span>
-                  <p className="text-sm text-on-surface leading-relaxed">"Late checkout in Suite 505 (13:00). Prioritize turnover as next guest arrives at 15:30."</p>
-                </div>
               </div>
             </div>
 
@@ -123,6 +148,20 @@ const StaffDashboard = () => {
           </aside>
         </div>
       </main>
+
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Task Completion"
+        actions={
+          <>
+            <button onClick={confirmComplete} className="flex-1 bg-secondary text-on-secondary py-3 rounded-lg font-bold uppercase text-[10px] tracking-widest">Mark Finished</button>
+            <button onClick={() => setModalOpen(false)} className="flex-1 bg-surface-container-high text-on-surface-variant py-3 rounded-lg font-bold uppercase text-[10px] tracking-widest">Cancel</button>
+          </>
+        }
+      >
+        Have you finished working on <strong>{selectedTask?.title}</strong>? This action will notify the duty manager.
+      </Modal>
     </div>
   );
 };

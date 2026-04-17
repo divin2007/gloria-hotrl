@@ -14,7 +14,7 @@ const Footer = () => {
           <Link className="text-stone-500 hover:text-white transition-colors font-serif text-sm" to="/terms">Terms of Service</Link>
           <Link className="text-stone-500 hover:text-white transition-colors font-serif text-sm" to="/contact">Contact Us</Link>
           <Link className="text-stone-500 hover:text-white transition-colors font-serif text-sm" to="/press">Press Kit</Link>
-          <Link className="text-amber-600/50 hover:text-amber-600 transition-colors font-serif text-sm border border-amber-600/20 px-2 rounded" to="/admin">Staff Portal</Link>
+          <Link className="text-amber-600/50 hover:text-amber-600 transition-colors font-serif text-sm border border-amber-600/20 px-2 rounded" to="/signin">Staff Login</Link>
         </div>
         <div className="text-stone-500 font-serif text-xs">
           © 2024 Hotel Gloria Kigali. All rights reserved.
