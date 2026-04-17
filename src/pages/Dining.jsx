@@ -1,0 +1,180 @@
+import React, { useState } from 'react';
+import { useHotel } from '../context/HotelContext';
+
+const Dining = () => {
+  const { addReservation } = useHotel();
+  const [formData, setFormData] = useState({
+    name: '',
+    guests: '2 Guests',
+    date: '',
+    time: '19:00',
+    requests: ''
+  });
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addReservation({
+      guest: formData.name,
+      room: "The Summit",
+      type: "Dining",
+      guests: parseInt(formData.guests),
+      time: formData.time,
+      date: formData.date,
+      status: "Pending"
+    });
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 5000);
+  };
+
+  return (
+    <main>
+      <section className="relative h-[870px] flex items-center overflow-hidden hero-gradient">
+        <div className="absolute inset-0 opacity-40">
+          <img className="w-full h-full object-cover" alt="Luxury restaurant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu9S8A2cR6MUK0t-LsP5_w6FQLSwjZbDhbLaMIBwN9n6K1Nwb8Mu0JjvpKyg78CixqNRXJHDKeKpM4ycMlirSPm3Bb5UMU6fgpbumwl7Z5y6xu3rZ0FeGboQGjq2UdED9696rNsNrC3MAnxBGGedXDRtcKjfOSO7DLdE32nbVMRxdoIEm7Ni58fq7PMaBQFdd24Peu4VbYzRitdb3Ewe6y7inoUFYQ6iHqjPiUzBul_qksRuxKZBbCFZidC7eb4YGHsltHADwMwddN"/>
+        </div>
+        <div className="relative max-w-screen-2xl mx-auto px-8 w-full">
+          <div className="max-w-3xl">
+            <span className="text-secondary font-label tracking-[0.2em] mb-6 block uppercase text-sm">Epicurean Excellence</span>
+            <h1 className="font-headline text-white text-6xl md:text-8xl leading-tight mb-8">Taste of the <br/><span className="italic">Thousand Hills</span></h1>
+            <p className="text-surface-variant text-lg md:text-xl font-body max-w-xl mb-10 leading-relaxed">
+              A curated culinary journey blending Rwandan seasonal ingredients with avant-garde international techniques.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <a className="bg-secondary text-on-secondary px-8 py-4 rounded-lg font-medium hover:bg-on-secondary-fixed-variant transition-colors" href="#reserve">Secure a Table</a>
+              <a className="border-b border-secondary text-secondary-fixed font-medium px-2 py-4 flex items-center gap-2 group" href="#menu">
+                Explore Menus
+                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 px-8 bg-surface">
+        <div className="max-w-screen-2xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div className="md:col-span-5 flex flex-col justify-center">
+              <h2 className="font-headline text-primary text-4xl md:text-5xl mb-6">The Umurage Room</h2>
+              <p className="text-on-surface-variant text-lg leading-relaxed mb-8">
+                Named after the Kinyarwanda word for 'Legacy', our flagship restaurant offers a sophisticated atmosphere defined by hand-carved woodwork and panoramic views of the hills.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 text-on-surface">
+                  <span className="material-symbols-outlined text-secondary">schedule</span>
+                  <div className="font-body">
+                    <p className="font-semibold">Breakfast & Lunch</p>
+                    <p className="text-sm text-on-surface-variant">06:30 AM — 03:00 PM</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-on-surface">
+                  <span className="material-symbols-outlined text-secondary">restaurant_menu</span>
+                  <div className="font-body">
+                    <p className="font-semibold">Dinner Service</p>
+                    <p className="text-sm text-on-surface-variant">06:00 PM — 11:00 PM</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="md:col-span-7 grid grid-cols-2 gap-4">
+              <div className="rounded-xl overflow-hidden h-96 shadow-ambient">
+                <img className="w-full h-full object-cover" alt="Gourmet dish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEHkrDss2l38B4-Wv8vw_5VwA2UD7r1nfTjZbFo2Le4rMy_-D07brhVpbZj9iS1d0MlKNF1jzjDjMpda4InKv6q75A1_xjN88NFlfLLR9N0nfSPKJwgbJWzfGaJjJZOeGVLSmmDZOIQaxeSrm3WJFurfEse0c0BCgrohmwEx2lxNl_7547KCF1-q2Z12vIhR-1kyd1TO2t3xVO4csDnvD9ZCYIxcL8v-RaIC2m0aj4Rcxi4z7AVzR0x1k9fDrKe9m_vksKYaM6V1nd"/>
+              </div>
+              <div className="rounded-xl overflow-hidden h-[30rem] mt-12 shadow-ambient">
+                <img className="w-full h-full object-cover" alt="Bar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNmML1are6mdjF-v958rkhDZ7ywsu5OxAsQgof1vq8mBQjEmKbVl1M_AIiy3jTl4Z084b7s6fsnfTtHhXcgbn8BdaAalqfNvB1H66CDW9O6kWRW1jwKaiZugio5kLQBlhfcpXgx0pkf8AY6Ku-3ikav-2GTEIeUU00ZWBxfQuwlQFjFIlnIj1UUuWnOJaTsxrUTjPJjhJ6AaRdrn5FlsA8_xTQ0bvhnIrNJ6Wd737grEGm-diWuf_HXR0Hj1D7CypXbp5PSvBd8maP"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 bg-white" id="reserve">
+        <div className="max-w-6xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="relative">
+            <img className="w-full aspect-[4/5] object-cover rounded-xl shadow-ambient" alt="Private dining" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCldaRybNsCnIFnr_ZROwcdhkGpzDmxbQbwaTc11pSdJ5iWulRQ2rAUjNcwsDIpLUiG3PtUaaey4K5JdTfMIybGDuWp4rB6XDYDSXCqsIZt11bef4yzoCu7Gm5cZsVtN9eh8Z3Qsrzq4TQEeuOGQbgRKfkSVn9jr_g5Ns3xjoabX1tfDCKUyhNBg8ZhWr3KK6cygnuRUVjTt4Qg9vq3-s2mxnjxc4lFewzVwRBZIADhbVfE9UbCN5pTcpEKFFDI36y1L7Dqpb3nRjog"/>
+            <div className="absolute -bottom-8 -right-8 bg-primary p-8 rounded-lg text-white hidden md:block max-w-xs shadow-ambient">
+              <p className="font-headline text-xl mb-2">Private Dining</p>
+              <p className="text-sm text-surface-variant mb-4 leading-relaxed">Host your intimate gatherings in our secluded Ivory Suite for groups up to 12.</p>
+              <a className="text-secondary font-medium text-sm flex items-center gap-2" href="#">Inquire Now <span className="material-symbols-outlined text-sm">open_in_new</span></a>
+            </div>
+          </div>
+          <div>
+            <h2 className="font-headline text-4xl text-primary mb-2">Reserve a Table</h2>
+            <p className="text-on-surface-variant mb-10">Select your preferred date and time to experience our culinary mastery.</p>
+            {success ? (
+              <div className="bg-secondary/10 border border-secondary p-8 rounded-xl text-center">
+                <span className="material-symbols-outlined text-secondary text-5xl mb-4">check_circle</span>
+                <h3 className="font-headline text-2xl text-primary mb-2">Reservation Received</h3>
+                <p className="text-on-surface-variant">We've received your request for {formData.date} at {formData.time}. Our team will confirm shortly.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Full Name</label>
+                    <input
+                      required
+                      className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+                      placeholder="Johnathan Doe"
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Guests</label>
+                    <select
+                      className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+                      value={formData.guests}
+                      onChange={(e) => setFormData({...formData, guests: e.target.value})}
+                    >
+                      <option>2 Guests</option>
+                      <option>4 Guests</option>
+                      <option>6+ Guests</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Date</label>
+                    <input
+                      required
+                      className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => setFormData({...formData, date: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Time</label>
+                    <select
+                      className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+                      value={formData.time}
+                      onChange={(e) => setFormData({...formData, time: e.target.value})}
+                    >
+                      <option>19:00</option>
+                      <option>19:30</option>
+                      <option>20:00</option>
+                      <option>20:30</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Special Requests</label>
+                  <textarea
+                    className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+                    placeholder="Dietary requirements, anniversary, window seating..."
+                    rows="3"
+                    value={formData.requests}
+                    onChange={(e) => setFormData({...formData, requests: e.target.value})}
+                  ></textarea>
+                </div>
+                <button className="w-full bg-primary text-on-primary py-4 rounded-lg font-medium hover:bg-primary-container transition-colors shadow-lg shadow-primary/10" type="submit">Confirm Reservation</button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+};
+
+export default Dining;
