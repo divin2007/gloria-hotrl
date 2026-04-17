@@ -8,9 +8,9 @@ const Sidebar = () => {
     { name: 'Dashboard', path: '/admin', icon: 'dashboard' },
     { name: 'Reservations', path: '/admin/reservations', icon: 'calendar_month' },
     { name: 'Front Desk', path: '/admin/front-desk', icon: 'concierge' },
-    { name: 'Housekeeping', path: '#', icon: 'cleaning_services' },
-    { name: 'Maintenance', path: '/staff/tasks', icon: 'handyman' },
-    { name: 'Reports', path: '#', icon: 'analytics' },
+    { name: 'Housekeeping', path: '/admin/housekeeping', icon: 'cleaning_services' },
+    { name: 'Maintenance', path: '/admin/maintenance', icon: 'handyman' },
+    { name: 'Reports', path: '/admin/reports', icon: 'analytics' },
   ];
 
   return (
@@ -35,15 +35,25 @@ const Sidebar = () => {
           </Link>
         ))}
       </div>
-      <button className="mt-4 bg-secondary text-on-primary py-3 px-4 rounded-lg font-bold flex items-center justify-center space-x-2 transition-transform active:scale-95">
+      <Link
+        to="/admin/reservations"
+        className="mt-4 bg-secondary text-on-primary py-3 px-4 rounded-lg font-bold flex items-center justify-center space-x-2 transition-transform active:scale-95"
+      >
         <span className="material-symbols-outlined">add</span>
         <span className="font-sans text-sm font-medium uppercase tracking-wider">New Booking</span>
-      </button>
+      </Link>
       <div className="pt-6 mt-6 border-t border-slate-800 space-y-1">
-        <a className="flex items-center space-x-3 px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-900/50 hover:translate-x-1 transition-transform duration-200" href="#">
+        <Link
+          to="/admin/settings"
+          className={`flex items-center space-x-3 px-4 py-2 rounded-lg ${
+            location.pathname === '/admin/settings'
+              ? 'bg-slate-900 text-amber-500 border-r-4 border-amber-500'
+              : 'text-slate-400 hover:bg-slate-900/50 hover:translate-x-1 transition-transform duration-200'
+          }`}
+        >
           <span className="material-symbols-outlined">settings</span>
           <span className="font-sans text-sm font-medium uppercase tracking-wider">Settings</span>
-        </a>
+        </Link>
         <Link to="/" className="flex items-center space-x-3 px-4 py-2 rounded-lg text-slate-400 hover:bg-slate-900/50 hover:translate-x-1 transition-transform duration-200">
           <span className="material-symbols-outlined">logout</span>
           <span className="font-sans text-sm font-medium uppercase tracking-wider">Logout</span>

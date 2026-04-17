@@ -1,11 +1,9 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff');
-
-  if (isAdmin) return null;
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: 'Rooms', path: '/rooms' },
@@ -34,8 +32,13 @@ const Navbar = () => {
           ))}
         </div>
         <div className="flex items-center space-x-6">
-          <button className="text-slate-600 dark:text-slate-400 font-sans text-sm tracking-wide hover:text-amber-600 transition-colors duration-300">Sign In</button>
-          <button className="bg-primary-container text-on-primary py-2.5 px-6 rounded-lg text-sm font-medium scale-95 duration-150 ease-in-out hover:bg-primary transition-all">Book Now</button>
+          <Link to="/signin" className="text-slate-600 dark:text-slate-400 font-sans text-sm tracking-wide hover:text-amber-600 transition-colors duration-300">Sign In</Link>
+          <button
+            onClick={() => navigate('/rooms')}
+            className="bg-primary-container text-on-primary py-2.5 px-6 rounded-lg text-sm font-medium scale-95 duration-150 ease-in-out hover:bg-primary transition-all"
+          >
+            Book Now
+          </button>
         </div>
       </div>
     </nav>

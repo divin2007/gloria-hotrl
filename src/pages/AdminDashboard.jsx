@@ -79,7 +79,7 @@ const AdminDashboard = () => {
           <div className="col-span-12 md:col-span-8 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
             <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center">
               <h3 className="font-serif text-lg text-slate-200">Recent Transactions</h3>
-              <button className="text-xs uppercase tracking-widest text-secondary hover:text-amber-400 transition-colors font-bold">View Audit Log</button>
+              <Link to="/admin/reservations" className="text-xs uppercase tracking-widest text-secondary hover:text-amber-400 transition-colors font-bold">View Audit Log</Link>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
