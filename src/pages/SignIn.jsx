@@ -63,6 +63,16 @@ const SignIn = () => {
           </button>
         </form>
 
+        <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-dashed border-slate-300 text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Staff Access</p>
+          <button
+            onClick={() => navigate('/admin')}
+            className="text-xs text-amber-700 font-semibold hover:text-amber-800 underline"
+          >
+            Enter Management Dashboard Directly
+          </button>
+        </div>
+
         <div className="mt-8 pt-8 border-t border-outline-variant/30 text-center">
           <p className="text-on-surface-variant text-sm">
             Don't have an account? <a href="#" className="text-secondary font-semibold hover:underline">Join Membership</a>

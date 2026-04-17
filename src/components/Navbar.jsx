@@ -32,6 +32,7 @@ const Navbar = () => {
           ))}
         </div>
         <div className="flex items-center space-x-6">
+          <Link to="/admin" className="hidden lg:block text-slate-500 font-sans text-xs uppercase tracking-widest border border-slate-200 px-3 py-1 rounded hover:bg-slate-50 transition-colors">Management</Link>
           <Link to="/signin" className="text-slate-600 dark:text-slate-400 font-sans text-sm tracking-wide hover:text-amber-600 transition-colors duration-300">Sign In</Link>
           <button
             onClick={() => navigate('/rooms')}

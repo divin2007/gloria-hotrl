@@ -11,6 +11,7 @@ const Sidebar = () => {
     { name: 'Housekeeping', path: '/admin/housekeeping', icon: 'cleaning_services' },
     { name: 'Maintenance', path: '/admin/maintenance', icon: 'handyman' },
     { name: 'Reports', path: '/admin/reports', icon: 'analytics' },
+    { name: 'Staff Tasks', path: '/staff/tasks', icon: 'assignment' },
   ];
 
   return (
