@@ -203,6 +203,15 @@ const Dining = () => {
                 <div className="space-y-10">
                   {catalogMenu.filter(item => item.category === cat.id).map(item => (
                     <div key={item.id} className="group">
+                      {item.image && (
+                        <div className="aspect-video mb-4 overflow-hidden rounded-xl shadow-sm">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          />
+                        </div>
+                      )}
                       <div className="flex justify-between items-baseline mb-2">
                         <h4 className="font-body font-bold text-on-surface group-hover:text-secondary transition-colors">{item.name}</h4>
                         <span className="text-secondary font-bold text-sm shrink-0 ml-4">{item.price}</span>

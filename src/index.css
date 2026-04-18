@@ -89,4 +89,15 @@
     background: rgba(27, 28, 26, 0.4);
     backdrop-filter: blur(20px);
   }
+
+  .staff-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .staff-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  .staff-scroll::-webkit-scrollbar-thumb {
+    background: #775a19;
+    border-radius: 10px;
+  }
 }
