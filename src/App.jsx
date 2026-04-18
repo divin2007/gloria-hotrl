@@ -26,6 +26,7 @@ import AdminSettings from './pages/AdminSettings';
 import ManagerDashboard from './pages/ManagerDashboard';
 import ReceptionistDashboard from './pages/ReceptionistDashboard';
 import StaffDashboard from './pages/StaffDashboard';
+import GuestDashboard from './pages/GuestDashboard';
 import NewBooking from './pages/NewBooking';
 import StaffRequest from './pages/StaffRequest';
 import MaintenanceLog from './pages/MaintenanceLog';
@@ -98,6 +99,7 @@ function App() {
             <Route path="/dashboard/manager" element={<AuthGuard requiredRole="manager"><ManagerDashboard /></AuthGuard>} />
             <Route path="/dashboard/receptionist" element={<AuthGuard requiredRole="receptionist"><ReceptionistDashboard /></AuthGuard>} />
             <Route path="/dashboard/staff" element={<AuthGuard requiredRole="staff"><StaffDashboard /></AuthGuard>} />
+            <Route path="/dashboard/guest" element={<AuthGuard requiredRole="guest"><GuestDashboard /></AuthGuard>} />
 
             {/* Staff specific tool routes */}
             <Route path="/staff/tasks" element={<AuthGuard requiredRole="staff"><StaffTasks /></AuthGuard>} />
