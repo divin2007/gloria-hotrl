@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
-import { SkeletonCard, SkeletonTable } from '../components/LoadingSkeleton';
+import { SkeletonCard, SkeletonTable, SkeletonLine } from '../components/LoadingSkeleton';
 import SEO from '../components/SEO';
 
 const ManagerDashboard = () => {
