@@ -66,14 +66,19 @@ const Rooms = () => {
                                       <p className="text-on-surface-variant font-body mb-8 leading-relaxed text-sm">{room.description}</p>
 
                                       <div className="flex flex-wrap gap-6 mb-8">
-                                          <div className="flex items-center gap-2">
-                                              <span className="material-symbols-outlined text-secondary text-xl">wifi</span>
-                                              <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">WiFi</span>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                              <span className="material-symbols-outlined text-secondary text-xl">ac_unit</span>
-                                              <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Climate</span>
-                                          </div>
+                                          {(room.amenities || ['WiFi', 'Climate Control']).map(amenity => (
+                                              <div key={amenity} className="flex items-center gap-2">
+                                                  <span className="material-symbols-outlined text-secondary text-xl">
+                                                      {amenity.toLowerCase().includes('wifi') ? 'wifi' :
+                                                       amenity.toLowerCase().includes('climate') || amenity.toLowerCase().includes('ac') ? 'ac_unit' :
+                                                       amenity.toLowerCase().includes('service') || amenity.toLowerCase().includes('butler') ? 'room_service' :
+                                                       amenity.toLowerCase().includes('bar') ? 'local_bar' :
+                                                       amenity.toLowerCase().includes('shuttle') || amenity.toLowerCase().includes('transport') ? 'airport_shuttle' :
+                                                       'check_circle'}
+                                                  </span>
+                                                  <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{amenity}</span>
+                                              </div>
+                                          ))}
                                       </div>
                                   </div>
                                   <div className="flex items-end justify-between border-t border-outline-variant/15 pt-8">
