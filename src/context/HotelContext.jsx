@@ -55,6 +55,35 @@ export const HotelProvider = ({ children }) => {
     { id: 2, staffId: 5, name: "Sarah L.", role: "Receptionist • LVL 2", request: "Requesting leave for Saturday morning shift (Family emergency).", status: "Pending" }
   ]));
 
+  // Inventory Catalogs
+  const [catalogRooms, setCatalogRooms] = useState(() => getInitialData('gloria_cat_rooms', [
+    { id: 1, name: "Standard King", description: "A serene escape featuring artisanal textures and a signature King-sized mattress.", price: 180, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDFrpyURkjBqTpsTRQpX2-9-zX-hrs3IWU3r3dX6GOIJMRp3e2kY9L5f1Pay5fGDWzf1XhGNIL-pBuoW7-_77M1hhNgAy3ob_6T3zIqm-9SWKitblQ8JmBh82y87PDNXSNT5lq2rK2NCRelYpTOJU2BdgV7-7GH-X8sr490Vco2vg3ZFBvju7WEnsS3P6wlFngfuyc4zlc1N6ByO0LT8ViXD6I2eyFzh9LlWp8gdtkQefzKhWFbJhZRUgUeTA7vNdvMvRxrjB3UqYze", popular: true },
+    { id: 2, name: "Deluxe Suite", description: "Extended living spaces with panoramic views of the Kigali hills. Includes a private bar.", price: 320, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCGD8oZOP6zoeRii_iKG8cj-JldLoCoz_MZM0R6pFI7kUBEk9wSmgdhkyLX2I7lhAf16zYaytzY1CSeHgRpVfhPESii4CCrFlqbhGp5Wi9BdXFToNvL1WV_NTxBConRxM3aWiiHlcvqZEkoHBJJvoTIfiivIcuY9tteks8_bn_dxA8N6Gnf22XcxVRDRB5v0WnGYTV7jd5SmdMi64BT-DOODRCaS915r-J5Fy0ZRlbdDU3NjB4LiQkjT2YsoCWUn19UAYB815ZSuWd5" },
+    { id: 3, name: "Executive Penthouse", description: "The ultimate expression of luxury. A two-story residence with a private terrace.", price: 1200, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBWPfF7IR_DRXEuineYUYowxsJuAn6BAnxQb0vc5MmRMlMK4UaozSp1Gt2hm3FH9bcyyJcRZtQ4h6I5gBoPmofbB4figYECbyFZZ8mAkBO9wxdIfvRh5gH54U4dpM9SqAWXOrLaZHiLIAe0t_OK5l2L1_dSRqqIyPFys116B6TPJtrmPqBimQrLiFAB7df-D9NuVXo6g_EgVHT5Axil1CU5jKVShZlg9hdwYXM5tK4OOTyGp9v_6C2KGuOl0240bQNexZkwyqbSEQ6p", topTier: true }
+  ]));
+
+  const [catalogEvents, setCatalogEvents] = useState(() => getInitialData('gloria_cat_events', [
+    { id: 1, name: "The Virunga Ballroom", description: "Spacious contemporary hotel ballroom with wooden accents.", capacity: 500, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBiF2tF8H3VepaVqJ28vg2_1zGplP2Q78r5d2ENONNxOqgKSgOHjtYx3nJ8RFqm5WvfOE8-flossu2Brz1y5DYG2-ikT3wbtadDvx-PGGnf-kCYdGdavIJylgRxVWbNs6baHomgNn_-qifLBQTLsTH9DL-AV8DUmRCiogMf7hps7Ie-i1ejQF-AiG_9M9v6UIh0E0ioEKLm7twebloBB-O-QzAllxG6d3e64-zU4vSP9zx3m0-ZB8qc3nPM6KorVUeOJU_mcgCNYv69" },
+    { id: 2, name: "The Skyline Terrace", description: "Open-air elegance for cocktail receptions and evening celebrations.", capacity: 150, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC1kfqXw-qY06yFCxjo-et-ciQr3teyZj6Umkc_uOruw5bxHlfLLXzOP3UGoorOBNOaEbmoFlNzLG8IFjYoKRE0g7s_YxfZ3nmFOZ6oh555fVJR8I7T0oncYTnMYh2T2Z99wum4YMkO69pIBAecPTjZDqYPTXTXNwetQE0VeaWutY4RWK1QYz-cMJlK3qQmLdTbRjILF6K1Fw3fte_Ehd2IqhOPSQlf4ifhASU3PDwMP-y4-iCWKxMuOaCKpjX_KCNgspz0umScQAk-" },
+    { id: 3, name: "The Kigali Suite", description: "A high-tech executive environment designed for focused collaboration.", capacity: 25, image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC7V53_pVDNLi76yYfYhhmOAb-RiavzmbbIgcF7gtd-1BVpWp3WGYi0WvOYrDu-dZdYgVgFIbqfNBVTypben2HKwiyT58tbZaKJMvMaOcDdCbUYARabKwWL8fZY1bvzhJYrCwImrtZbF5EKqw2NexSD0L0MyehfgQhWfv1DPTY-AUm76NNha4HzJSPxjdEyki9HpCD4hjy1dq56T-j8cH4U9f3JNvo1bq5m1owaNQHvZpHKyqTylarpu3yu6F475kuz-Y-pD73trsq0" }
+  ]));
+
+  const [catalogDining, setCatalogDining] = useState(() => getInitialData('gloria_cat_dining', [
+    { id: 1, name: "The Umurage Room", description: "Our flagship restaurant offering a sophisticated atmosphere.", hours: "06:30 AM — 11:00 PM", image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAu9S8A2cR6MUK0t-LsP5_w6FQLSwjZbDhbLaMIBwN9n6K1Nwb8Mu0JjvpKyg78CixqNRXJHDKeKpM4ycMlirSPm3Bb5UMU6fgpbumwl7Z5y6xu3rZ0FeGboQGjq2UdED9696rNsNrC3MAnxBGGedXDRtcKjfOSO7DLdE32nbVMRxdoIEm7Ni58fq7PMaBQFdd24Peu4VbYzRitdb3Ewe6y7inoUFYQ6iHqjPiUzBul_qksRuxKZBbCFZidC7eb4YGHsltHADwMwddN" }
+  ]));
+
+  const [catalogMenu, setCatalogMenu] = useState(() => getInitialData('gloria_cat_menu', [
+    { id: 1, category: "Food", name: "Isombe Modernist", description: "Cassava leaves velouté, bone marrow emulsion, sourdough crumbles.", price: "12k RWF", subcategory: "Starters" },
+    { id: 2, category: "Food", name: "Kigali Garden Salad", description: "Micro-greens, passion fruit vinaigrette, macadamia, goat cheese.", price: "9k RWF", subcategory: "Starters" },
+    { id: 3, category: "Food", name: "Lake Kivu Sambaza", description: "Pan-seared silverfish, volcanic potato purée, saffron broth.", price: "24k RWF", subcategory: "Signature Mains" },
+    { id: 4, category: "Food", name: "Slow-Roasted Akabenz", description: "Twice-cooked pork belly, honey-ginger glaze, plantain pavé.", price: "28k RWF", subcategory: "Signature Mains" },
+    { id: 5, category: "Food", name: "Rubavu Coffee Tart", description: "Espresso ganache, salted caramel, hazelnut praline.", price: "10k RWF", subcategory: "Confections" },
+    { id: 6, category: "Food", name: "Wild Hibiscus Sorbet", description: "Local botanicals, fresh honeycomb, mint oil.", price: "8k RWF", subcategory: "Confections" },
+    { id: 7, category: "Drink", name: "Ginger Infusion", description: "Fresh local ginger, honey, lemon.", price: "4k RWF" },
+    { id: 8, category: "Alcohol", name: "Akagera Twilight", description: "Rwandan gin, hibiscus reduction, sparkling water.", price: "12k RWF" },
+    { id: 9, category: "Special", name: "Chef's Garden Tasting", description: "A 5-course journey through the hotel's private harvest.", price: "45k RWF" }
+  ]));
+
   useEffect(() => {
     localStorage.setItem('gloria_user', JSON.stringify(user));
     localStorage.setItem('gloria_reservations', JSON.stringify(reservations));
@@ -63,7 +92,11 @@ export const HotelProvider = ({ children }) => {
     localStorage.setItem('gloria_tasks', JSON.stringify(tasks));
     localStorage.setItem('gloria_staff', JSON.stringify(staff));
     localStorage.setItem('gloria_staff_requests', JSON.stringify(staffRequests));
-  }, [user, reservations, diningReservations, eventInquiries, tasks, staff, staffRequests]);
+    localStorage.setItem('gloria_cat_rooms', JSON.stringify(catalogRooms));
+    localStorage.setItem('gloria_cat_events', JSON.stringify(catalogEvents));
+    localStorage.setItem('gloria_cat_dining', JSON.stringify(catalogDining));
+    localStorage.setItem('gloria_cat_menu', JSON.stringify(catalogMenu));
+  }, [user, reservations, diningReservations, eventInquiries, tasks, staff, staffRequests, catalogRooms, catalogEvents, catalogDining, catalogMenu]);
 
   const addReservation = (reservation) => {
     const newRes = {
@@ -112,6 +145,14 @@ export const HotelProvider = ({ children }) => {
     setStaffRequests(prev => prev.map(req => req.id === id ? { ...req, status: "Denied" } : req));
   };
 
+  const addCatalogItem = (category, item) => {
+    const newItem = { ...item, id: Date.now() };
+    if (category === 'Rooms') setCatalogRooms(prev => [...prev, newItem]);
+    if (category === 'Events') setCatalogEvents(prev => [...prev, newItem]);
+    if (category === 'Dining') setCatalogDining(prev => [...prev, newItem]);
+    if (category === 'Menu') setCatalogMenu(prev => [...prev, newItem]);
+  };
+
   const login = (email, password) => {
     // Simulate role-based auth
     if (email.includes('admin')) {
@@ -140,12 +181,17 @@ export const HotelProvider = ({ children }) => {
       tasks,
       staff,
       staffRequests,
+      catalogRooms,
+      catalogEvents,
+      catalogDining,
+      catalogMenu,
       addReservation,
       updateReservationStatus,
       addTask,
       updateTaskStatus,
       approveStaffRequest,
-      denyStaffRequest
+      denyStaffRequest,
+      addCatalogItem
     }}>
       {children}
     </HotelContext.Provider>

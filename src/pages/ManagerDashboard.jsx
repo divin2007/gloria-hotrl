@@ -8,23 +8,40 @@ import Modal from '../components/Modal';
 
 const ManagerDashboard = () => {
   const {
-    reservations,
     staff,
     staffRequests,
     approveStaffRequest,
     denyStaffRequest,
     addTask,
-    tasks
+    tasks,
+    catalogRooms,
+    catalogEvents,
+    catalogDining,
+    catalogMenu,
+    addCatalogItem
   } = useHotel();
   const [loading, setLoading] = useState(true);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showCatalogModal, setShowCatalogModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [catalogType, setCatalogType] = useState('Rooms');
 
   const [newTask, setNewTask] = useState({
     title: '',
     category: 'General',
     priority: 'Standard',
     icon: 'assignment'
+  });
+
+  const [newItem, setNewItem] = useState({
+    name: '',
+    description: '',
+    price: '',
+    category: 'Food',
+    subcategory: 'Starters',
+    capacity: '',
+    hours: '',
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop'
   });
 
   useEffect(() => {
@@ -47,6 +64,22 @@ const ManagerDashboard = () => {
     });
     setShowTaskModal(false);
     setNewTask({ title: '', category: 'General', priority: 'Standard', icon: 'assignment' });
+  };
+
+  const handleAddCatalogItem = (e) => {
+    e.preventDefault();
+    addCatalogItem(catalogType, newItem);
+    setShowCatalogModal(false);
+    setNewItem({
+      name: '',
+      description: '',
+      price: '',
+      category: 'Food',
+      subcategory: 'Starters',
+      capacity: '',
+      hours: '',
+      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop'
+    });
   };
 
   const pendingRequests = staffRequests.filter(req => req.status === 'Pending');
@@ -79,6 +112,34 @@ const ManagerDashboard = () => {
           </div>
         </header>
 
+        {/* Action Bar */}
+        <section className="flex gap-4 mb-10 overflow-x-auto pb-2">
+            <button
+              onClick={() => { setCatalogType('Rooms'); setShowCatalogModal(true); }}
+              className="bg-primary text-on-primary px-6 py-3 rounded-lg flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest hover:brightness-110 shrink-0 shadow-lg"
+            >
+              <span className="material-symbols-outlined text-sm">add_home</span> Add Room
+            </button>
+            <button
+              onClick={() => { setCatalogType('Events'); setShowCatalogModal(true); }}
+              className="bg-primary text-on-primary px-6 py-3 rounded-lg flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest hover:brightness-110 shrink-0 shadow-lg"
+            >
+              <span className="material-symbols-outlined text-sm">event</span> Add Event Space
+            </button>
+            <button
+              onClick={() => { setCatalogType('Dining'); setShowCatalogModal(true); }}
+              className="bg-primary text-on-primary px-6 py-3 rounded-lg flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest hover:brightness-110 shrink-0 shadow-lg"
+            >
+              <span className="material-symbols-outlined text-sm">restaurant</span> Add Dining Venue
+            </button>
+            <button
+              onClick={() => { setCatalogType('Menu'); setShowCatalogModal(true); }}
+              className="bg-secondary text-on-secondary px-6 py-3 rounded-lg flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest hover:brightness-110 shrink-0 shadow-lg"
+            >
+              <span className="material-symbols-outlined text-sm">menu_book</span> Add Menu Item
+            </button>
+        </section>
+
         {/* Performance Metrics Grid */}
         <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
           {loading ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />) : (
@@ -91,26 +152,24 @@ const ManagerDashboard = () => {
                 </div>
               </div>
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
-                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Task Efficiency</p>
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Inventory Assets</p>
                 <div className="flex items-end justify-between mt-2">
-                  <span className="font-headline text-3xl text-primary">88%</span>
-                  <div className="w-20 bg-surface-container-high h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-secondary h-full" style={{ width: '88%' }}></div>
-                  </div>
+                  <span className="font-headline text-3xl text-primary">{catalogRooms.length + catalogEvents.length + catalogDining.length}</span>
+                  <span className="text-on-surface-variant text-xs font-bold uppercase">Managed</span>
                 </div>
               </div>
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Staff On-Duty</p>
                 <div className="flex items-end justify-between mt-2">
                   <span className="font-headline text-3xl text-primary">{staff.length}</span>
-                  <span className="text-on-surface-variant text-xs font-bold">{pendingRequests.length} Pending Requests</span>
+                  <span className="text-on-surface-variant text-xs font-bold">{pendingRequests.length} Pending</span>
                 </div>
               </div>
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Active Tasks</p>
                 <div className="flex items-end justify-between mt-2">
                   <span className="font-headline text-3xl text-primary">{tasks.length}</span>
-                  <span className="text-secondary text-xs font-bold uppercase tracking-widest">Operational</span>
+                  <span className="text-secondary text-xs font-bold uppercase tracking-widest">Optimal</span>
                 </div>
               </div>
             </>
@@ -224,33 +283,99 @@ const ManagerDashboard = () => {
               </div>
             </div>
 
-            {/* Quick Stats Grid */}
+            {/* Catalog Summary */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
-                <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">Response Time Trends</h4>
-                <div className="h-24 flex items-end space-x-2">
-                  {[40, 60, 30, 75, 50, 95, 65].map((h, i) => (
-                    <div key={i} className={`flex-1 rounded-t transition-all hover:bg-secondary ${i === 5 ? 'bg-secondary' : 'bg-surface-container-high'}`} style={{ height: `${h}%` }}></div>
-                  ))}
+                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
+                    <h3 className="font-headline text-lg text-primary mb-4">Inventory Overview</h3>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-on-surface-variant">Rooms & Suites</span>
+                            <span className="font-bold">{catalogRooms.length}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-on-surface-variant">Event Spaces</span>
+                            <span className="font-bold">{catalogEvents.length}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-on-surface-variant">Dining Venues</span>
+                            <span className="font-bold">{catalogDining.length}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="text-on-surface-variant">Menu Items</span>
+                            <span className="font-bold">{catalogMenu.length}</span>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex justify-between mt-2 text-[8px] font-bold text-on-surface-variant uppercase tracking-tighter">
-                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                <div className="bg-primary p-6 rounded-xl shadow-editorial text-on-primary flex flex-col justify-center items-center text-center space-y-3">
+                    <span className="material-symbols-outlined text-4xl text-secondary">hotel_class</span>
+                    <h4 className="font-headline text-lg">Inventory Portal</h4>
+                    <p className="text-xs opacity-70">Add and manage hotel offerings dynamically.</p>
                 </div>
-              </div>
-              <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial flex flex-col justify-center items-center text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                  <span className="material-symbols-outlined">analytics</span>
-                </div>
-                <div>
-                  <h4 className="font-headline text-lg text-primary">Department Reports</h4>
-                  <p className="text-xs text-on-surface-variant">View detailed efficiency per sector</p>
-                </div>
-                <Link to="/admin/reports" className="text-secondary font-bold text-[10px] uppercase tracking-widest hover:underline">Download PDF</Link>
-              </div>
             </div>
           </section>
         </div>
       </main>
+
+      {/* Catalog Modal */}
+      <Modal
+        isOpen={showCatalogModal}
+        onClose={() => setShowCatalogModal(false)}
+        title={`Add New ${catalogType === 'Menu' ? 'Menu Item' : (catalogType === 'Dining' ? 'Dining Venue' : catalogType.slice(0, -1))}`}
+      >
+        <form onSubmit={handleAddCatalogItem} className="space-y-4 p-2">
+            <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Name</label>
+                <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
+            </div>
+            <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Description</label>
+                <textarea required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" rows="2" placeholder="Brief description" value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} />
+            </div>
+
+            {catalogType === 'Rooms' && (
+                <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Price per Night</label>
+                    <input required type="number" className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="180" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
+                </div>
+            )}
+
+            {catalogType === 'Events' && (
+                <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Capacity</label>
+                    <input required type="number" className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="500" value={newItem.capacity} onChange={e => setNewItem({...newItem, capacity: e.target.value})} />
+                </div>
+            )}
+
+            {catalogType === 'Dining' && (
+                <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Operating Hours</label>
+                    <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="06:30 AM — 11:00 PM" value={newItem.hours} onChange={e => setNewItem({...newItem, hours: e.target.value})} />
+                </div>
+            )}
+
+            {catalogType === 'Menu' && (
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Category</label>
+                        <select className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
+                            <option value="Food">Food</option>
+                            <option value="Drink">Drink</option>
+                            <option value="Alcohol">Alcoholic Beverage</option>
+                            <option value="Special">Hotel Special</option>
+                        </select>
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Price</label>
+                        <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="12k RWF" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
+                    </div>
+                </div>
+            )}
+
+            <button type="submit" className="w-full bg-secondary text-on-secondary py-4 rounded-lg font-bold uppercase tracking-widest hover:brightness-110 transition-all mt-4">
+                Add to Catalog
+            </button>
+        </form>
+      </Modal>
 
       {/* Task Assignment Modal */}
       <Modal
