@@ -1,26 +1,31 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useHotel } from '../context/HotelContext';
 
 const Sidebar = () => {
   const location = useLocation();
+  const { user } = useHotel();
   const [isOpen, setIsOpen] = useState(false);
 
   const links = [
-    { name: 'Admin Overview', path: '/admin', icon: 'dashboard' },
-    { name: 'Reservations', path: '/admin/reservations', icon: 'calendar_month' },
-    { name: 'Front Desk', path: '/admin/front-desk', icon: 'concierge' },
-    { name: 'Housekeeping', path: '/admin/housekeeping', icon: 'cleaning_services' },
-    { name: 'Maintenance', path: '/admin/maintenance', icon: 'handyman' },
-    { name: 'Reports', path: '/admin/reports', icon: 'analytics' },
+    { name: 'Admin Overview', path: '/admin', icon: 'dashboard', roles: ['admin'] },
+    { name: 'Reservations', path: '/admin/reservations', icon: 'calendar_month', roles: ['admin', 'manager'] },
+    { name: 'Front Desk', path: '/admin/front-desk', icon: 'concierge', roles: ['admin', 'receptionist'] },
+    { name: 'Housekeeping', path: '/admin/housekeeping', icon: 'cleaning_services', roles: ['admin', 'manager', 'staff'] },
+    { name: 'Maintenance', path: '/admin/maintenance', icon: 'handyman', roles: ['admin', 'manager', 'staff'] },
+    { name: 'Reports', path: '/admin/reports', icon: 'analytics', roles: ['admin', 'manager'] },
   ];
 
   const roleLinks = [
-    { name: 'Manager View', path: '/dashboard/manager', icon: 'manage_accounts' },
-    { name: 'Receptionist View', path: '/dashboard/receptionist', icon: 'badge' },
-    { name: 'Staff View', path: '/dashboard/staff', icon: 'engineering' },
+    { name: 'Manager Portal', path: '/dashboard/manager', icon: 'manage_accounts', roles: ['admin', 'manager'] },
+    { name: 'Receptionist Portal', path: '/dashboard/receptionist', icon: 'badge', roles: ['admin', 'receptionist'] },
+    { name: 'Staff Board', path: '/dashboard/staff', icon: 'engineering', roles: ['admin', 'staff'] },
+    { name: 'Guest Sanctuary', path: '/dashboard/guest', icon: 'spa', roles: ['admin', 'guest'] },
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const isVisible = (linkRoles) => !linkRoles || (user && linkRoles.includes(user.role));
 
   return (
     <>
@@ -49,7 +54,7 @@ const Sidebar = () => {
 
         <div className="flex flex-col space-y-1 flex-grow overflow-y-auto pr-2 custom-scrollbar">
           <div className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-2 ml-4 opacity-50">Operations</div>
-          {links.map((link) => (
+          {links.filter(l => isVisible(l.roles)).map((link) => (
             <Link
               key={link.name}
               to={link.path}
@@ -65,8 +70,8 @@ const Sidebar = () => {
             </Link>
           ))}
 
-          <div className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mt-6 mb-2 ml-4 opacity-50">Dashboards</div>
-          {roleLinks.map((link) => (
+          <div className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mt-6 mb-2 ml-4 opacity-50">Portal Switcher</div>
+          {roleLinks.filter(l => isVisible(l.roles)).map((link) => (
             <Link
               key={link.name}
               to={link.path}

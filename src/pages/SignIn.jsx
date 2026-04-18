@@ -31,7 +31,7 @@ const SignIn = () => {
             <input
               type="email"
               required
-              className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+              className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body text-sm"
               placeholder="email@example.com"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -42,7 +42,7 @@ const SignIn = () => {
             <input
               type="password"
               required
-              className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+              className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body text-sm"
               placeholder="••••••••"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -66,23 +66,29 @@ const SignIn = () => {
         </form>
 
         <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-dashed border-slate-300 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Internal Testing Access</p>
-          <div className="flex flex-wrap justify-center gap-4">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Internal Portal Access</p>
+          <div className="flex flex-wrap justify-center gap-3">
             <button
               onClick={() => { login('admin@gloria.com', 'pass'); navigate('/admin'); }}
-              className="text-[10px] text-amber-700 font-bold hover:text-amber-800 underline uppercase"
+              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
             >
               Admin
             </button>
             <button
               onClick={() => { login('manager@gloria.com', 'pass'); navigate('/dashboard/manager'); }}
-              className="text-[10px] text-amber-700 font-bold hover:text-amber-800 underline uppercase"
+              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
             >
               Manager
             </button>
             <button
+              onClick={() => { login('receptionist@gloria.com', 'pass'); navigate('/dashboard/receptionist'); }}
+              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
+            >
+              Receptionist
+            </button>
+            <button
               onClick={() => { login('staff@gloria.com', 'pass'); navigate('/dashboard/staff'); }}
-              className="text-[10px] text-amber-700 font-bold hover:text-amber-800 underline uppercase"
+              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
             >
               Staff
             </button>
