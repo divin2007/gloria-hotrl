@@ -4,15 +4,52 @@ import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 import { SkeletonCard, SkeletonTable, SkeletonLine } from '../components/LoadingSkeleton';
 import SEO from '../components/SEO';
+import Modal from '../components/Modal';
 
 const ManagerDashboard = () => {
-  const { reservations, staff } = useHotel();
+  const {
+    reservations,
+    staff,
+    staffRequests,
+    approveStaffRequest,
+    denyStaffRequest,
+    addTask,
+    tasks
+  } = useHotel();
   const [loading, setLoading] = useState(true);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+
+  const [newTask, setNewTask] = useState({
+    title: '',
+    category: 'General',
+    priority: 'Standard',
+    icon: 'assignment'
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  const handleOpenTaskModal = (member = null) => {
+    setSelectedStaff(member);
+    setShowTaskModal(true);
+  };
+
+  const handleAssignTask = (e) => {
+    e.preventDefault();
+    addTask({
+      ...newTask,
+      assignedTo: selectedStaff ? selectedStaff.name : 'Unassigned',
+      reporter: 'Manager Alexandre',
+      status: 'Assigned'
+    });
+    setShowTaskModal(false);
+    setNewTask({ title: '', category: 'General', priority: 'Standard', icon: 'assignment' });
+  };
+
+  const pendingRequests = staffRequests.filter(req => req.status === 'Pending');
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -65,163 +102,223 @@ const ManagerDashboard = () => {
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Staff On-Duty</p>
                 <div className="flex items-end justify-between mt-2">
-                  <span className="font-headline text-3xl text-primary">42</span>
-                  <span className="text-on-surface-variant text-xs font-bold">8 Pending</span>
+                  <span className="font-headline text-3xl text-primary">{staff.length}</span>
+                  <span className="text-on-surface-variant text-xs font-bold">{pendingRequests.length} Pending Requests</span>
                 </div>
               </div>
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
-                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Revenue (Daily)</p>
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Active Tasks</p>
                 <div className="flex items-end justify-between mt-2">
-                  <span className="font-headline text-3xl text-primary">$4.2k</span>
-                  <span className="text-secondary text-xs font-bold uppercase tracking-widest">Optimal</span>
+                  <span className="font-headline text-3xl text-primary">{tasks.length}</span>
+                  <span className="text-secondary text-xs font-bold uppercase tracking-widest">Operational</span>
                 </div>
               </div>
             </>
           )}
         </section>
 
-        {/* Main Grid Metrics */}
-        <div className="grid grid-cols-12 gap-6 mb-8">
-          <div className="col-span-12 md:col-span-8 bg-primary rounded-xl p-10 text-on-primary flex justify-between items-center relative overflow-hidden group shadow-2xl">
-            <div className="relative z-10">
-              <span className="text-secondary-fixed text-[10px] font-bold uppercase tracking-widest mb-4 block">Total Revenue (Monthly)</span>
-              <div className="flex items-baseline space-x-4">
-                <h2 className="font-headline text-5xl">$142,850</h2>
-                <span className="text-secondary-fixed-dim text-sm flex items-center">
-                  <span className="material-symbols-outlined text-sm mr-1">trending_up</span>
-                  +12.4% vs prev
-                </span>
-              </div>
-              <div className="mt-10 flex space-x-12">
-                <div>
-                  <p className="text-[10px] text-on-primary/60 mb-1 uppercase tracking-tighter">Rooms</p>
-                  <p className="text-xl font-serif">$98,400</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-on-primary/60 mb-1 uppercase tracking-tighter">Dining</p>
-                  <p className="text-xl font-serif">$32,150</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-on-primary/60 mb-1 uppercase tracking-tighter">Events</p>
-                  <p className="text-xl font-serif">$12,300</p>
-                </div>
-              </div>
-            </div>
-            <div className="absolute right-0 top-0 h-full w-1/2 opacity-5 flex items-end justify-around px-8 pb-4">
-               {[40, 65, 50, 85, 70, 95].map((h, i) => (
-                 <div key={i} className="w-4 bg-secondary rounded-t-sm" style={{ height: `${h}%` }}></div>
-               ))}
-            </div>
-          </div>
-
-          <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-8 flex flex-col justify-between shadow-editorial">
-            {loading ? <SkeletonCard /> : (
-              <>
-                <div>
-                  <span className="text-secondary text-[10px] font-bold uppercase tracking-widest mb-4 block">New Reservations</span>
-                  <div className="text-4xl font-serif text-primary">48 <span className="text-sm font-sans text-on-surface-variant font-normal">Today</span></div>
-                </div>
-                <div className="mt-6 space-y-4">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-on-surface-variant">Direct Website</span>
-                    <span className="font-bold text-primary">62%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                    <div className="bg-secondary h-full w-[62%]"></div>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-on-surface-variant">OTA Channels</span>
-                    <span className="font-bold text-primary">38%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                    <div className="bg-secondary/30 h-full w-[38%]"></div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <section className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-editorial">
-            <div className="px-8 py-6 border-b border-outline-variant/15 flex justify-between items-center bg-surface-container-low/30">
-              <h3 className="font-serif text-lg text-primary">Recent Transactions</h3>
-              <Link to="/admin/reservations" className="text-[10px] uppercase tracking-widest text-secondary hover:text-amber-700 transition-colors font-bold">View Audit Log</Link>
+          {/* Staff Approval Requests */}
+          <section className="lg:col-span-1 space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-headline text-2xl text-primary">Approval Queue</h3>
+              <span className="px-2 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded uppercase">
+                {pendingRequests.length} Pending
+              </span>
             </div>
-            <div className="overflow-x-auto">
-              {loading ? <SkeletonTable rows={4} /> : (
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="text-[10px] uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/15 font-bold">
-                      <th className="px-8 py-4">Guest</th>
-                      <th className="px-8 py-4">Room / Suite</th>
-                      <th className="px-8 py-4">Status</th>
-                      <th className="px-8 py-4 text-right">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant/10">
-                    {reservations.slice(0, 4).map((res) => (
-                      <tr key={res.id} className="hover:bg-surface-container-low transition-colors group">
-                        <td className="px-8 py-5">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-[10px] text-secondary mr-3 font-serif font-bold">
-                              {res.guest.split(' ').map(n => n[0]).join('')}
-                            </div>
-                            <span className="text-sm font-medium text-on-surface">{res.guest}</span>
-                          </div>
-                        </td>
-                        <td className="px-8 py-5 text-sm text-on-surface-variant">{res.room}</td>
-                        <td className="px-8 py-5">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                            res.status === 'Settled' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                          }`}>
-                            {res.status}
-                          </span>
-                        </td>
-                        <td className="px-8 py-5 text-sm font-serif text-on-surface text-right font-bold">${res.amount.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="space-y-4">
+              {loading ? [...Array(2)].map((_, i) => <SkeletonCard key={i} />) : (
+                pendingRequests.length === 0 ? (
+                  <div className="p-8 text-center bg-surface-container-low rounded-xl border border-dashed border-outline-variant">
+                    <p className="text-sm text-on-surface-variant">No pending requests</p>
+                  </div>
+                ) : (
+                  pendingRequests.map(req => (
+                    <div key={req.id} className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant/20 hover:border-secondary transition-colors duration-300 shadow-sm">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-secondary">
+                          <span className="material-symbols-outlined">person</span>
+                        </div>
+                        <div>
+                          <h4 className="font-body font-semibold text-primary">{req.name}</h4>
+                          <p className="text-[10px] text-on-surface-variant uppercase font-bold tracking-tight">{req.role}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-on-surface-variant mb-4 font-light leading-relaxed italic">"{req.request}"</p>
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => approveStaffRequest(req.id)}
+                          className="flex-1 py-2 bg-secondary text-on-secondary text-xs font-bold uppercase rounded-lg hover:brightness-110 transition-all"
+                        >Approve</button>
+                        <button
+                          onClick={() => denyStaffRequest(req.id)}
+                          className="flex-1 py-2 bg-surface-container-high text-on-surface-variant text-xs font-bold uppercase rounded-lg hover:bg-outline-variant/20 transition-all"
+                        >Deny</button>
+                      </div>
+                    </div>
+                  ))
+                )
               )}
             </div>
           </section>
 
-          <section className="lg:col-span-1 space-y-6">
-            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-6 shadow-editorial">
-              <h3 className="font-serif text-lg text-primary mb-6 flex justify-between items-center">
-                Staff Activity
-                <span className="material-symbols-outlined text-on-surface-variant opacity-30">more_vert</span>
-              </h3>
-              <div className="space-y-6">
-                {loading ? [...Array(3)].map((_, i) => <SkeletonLine key={i} className="h-10" />) : staff.slice(0, 3).map((s) => (
-                  <div key={s.id} className="flex items-center space-x-4">
-                    <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant">
-                      <span className="material-symbols-outlined">person</span>
-                    </div>
-                    <div className="flex-grow">
-                      <p className="text-sm font-medium text-on-surface">{s.name}</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter font-bold">{s.role}</p>
-                    </div>
-                    <span className="text-[8px] font-bold uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Online</span>
-                  </div>
-                ))}
+          {/* Workers Management & Tasks */}
+          <section className="lg:col-span-2 space-y-8">
+            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-editorial">
+              <div className="px-8 py-6 border-b border-outline-variant/15 flex justify-between items-center bg-surface-container-low/30">
+                <h3 className="font-serif text-lg text-primary">Workers Management</h3>
+                <button
+                  onClick={() => handleOpenTaskModal()}
+                  className="text-[10px] uppercase tracking-widest text-secondary hover:text-amber-700 transition-colors font-bold flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  Quick Assign
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                {loading ? <SkeletonTable rows={5} /> : (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-surface-container-low/50">
+                        <th className="px-6 py-4 text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">Worker</th>
+                        <th className="px-6 py-4 text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">Department</th>
+                        <th className="px-6 py-4 text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold uppercase text-on-surface-variant tracking-widest text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/10">
+                      {staff.map((member) => (
+                        <tr key={member.id} className="hover:bg-surface-container-low transition-colors">
+                          <td className="px-6 py-5">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                                <span className="material-symbols-outlined text-sm">person</span>
+                              </div>
+                              <div>
+                                <div className="font-body font-medium text-on-surface">{member.name}</div>
+                                <div className="text-[10px] text-on-surface-variant font-bold">LVL {member.level || 1}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            <span className="text-sm text-on-surface-variant">{member.role}</span>
+                          </td>
+                          <td className="px-6 py-5">
+                            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-100 uppercase tracking-tighter">
+                              {member.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-right">
+                            <button
+                              onClick={() => handleOpenTaskModal(member)}
+                              className="text-secondary hover:text-amber-700 transition-colors text-xs font-bold uppercase tracking-widest"
+                            >
+                              Assign Task
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
 
-            <div className="bg-secondary/5 p-8 rounded-xl border-2 border-dashed border-secondary/20 flex flex-col items-center justify-center space-y-4">
-              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-secondary shadow-sm">
-                <span className="material-symbols-outlined">assignment_add</span>
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
+                <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">Response Time Trends</h4>
+                <div className="h-24 flex items-end space-x-2">
+                  {[40, 60, 30, 75, 50, 95, 65].map((h, i) => (
+                    <div key={i} className={`flex-1 rounded-t transition-all hover:bg-secondary ${i === 5 ? 'bg-secondary' : 'bg-surface-container-high'}`} style={{ height: `${h}%` }}></div>
+                  ))}
+                </div>
+                <div className="flex justify-between mt-2 text-[8px] font-bold text-on-surface-variant uppercase tracking-tighter">
+                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
               </div>
-              <div className="text-center">
-                <h4 className="font-headline text-lg text-primary">Task Assignment</h4>
-                <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest opacity-60">Operations Workflow</p>
+              <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial flex flex-col justify-center items-center text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                  <span className="material-symbols-outlined">analytics</span>
+                </div>
+                <div>
+                  <h4 className="font-headline text-lg text-primary">Department Reports</h4>
+                  <p className="text-xs text-on-surface-variant">View detailed efficiency per sector</p>
+                </div>
+                <Link to="/admin/reports" className="text-secondary font-bold text-[10px] uppercase tracking-widest hover:underline">Download PDF</Link>
               </div>
-              <Link to="/staff/tasks" className="w-full text-center py-3 bg-secondary text-on-secondary font-bold text-[10px] uppercase tracking-widest rounded-lg hover:brightness-110 transition-all">Open Task Manager</Link>
             </div>
           </section>
         </div>
       </main>
+
+      {/* Task Assignment Modal */}
+      <Modal
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        title={selectedStaff ? `Assign Task to ${selectedStaff.name}` : "Quick Task Assignment"}
+      >
+        <form onSubmit={handleAssignTask} className="space-y-6 p-2">
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block">Task Title</label>
+            <input
+              required
+              className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 text-on-surface rounded-t-lg"
+              placeholder="e.g. Repair AC in Suite 302"
+              value={newTask.title}
+              onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block">Category</label>
+              <select
+                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 text-on-surface rounded-t-lg"
+                value={newTask.category}
+                onChange={(e) => setNewTask({...newTask, category: e.target.value, icon: e.target.value === 'Maintenance' ? 'handyman' : (e.target.value === 'Housekeeping' ? 'cleaning_services' : 'assignment')})}
+              >
+                <option value="General">General</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Housekeeping">Housekeeping</option>
+                <option value="Dining">Dining</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block">Priority</label>
+              <select
+                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 text-on-surface rounded-t-lg"
+                value={newTask.priority}
+                onChange={(e) => setNewTask({...newTask, priority: e.target.value})}
+              >
+                <option value="Low Priority">Low</option>
+                <option value="Standard">Standard</option>
+                <option value="High Priority">High</option>
+                <option value="Emergency">Emergency</option>
+              </select>
+            </div>
+          </div>
+
+          {!selectedStaff && (
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block">Assign To</label>
+              <select
+                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 text-on-surface rounded-t-lg"
+                onChange={(e) => setSelectedStaff(staff.find(s => s.name === e.target.value))}
+              >
+                <option value="">Unassigned</option>
+                {staff.map(s => <option key={s.id} value={s.name}>{s.name} ({s.role})</option>)}
+              </select>
+            </div>
+          )}
+
+          <div className="pt-4">
+            <button type="submit" className="w-full bg-primary text-on-primary py-4 rounded-lg font-bold uppercase tracking-widest hover:bg-primary-container transition-all shadow-lg">
+              Confirm Assignment
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

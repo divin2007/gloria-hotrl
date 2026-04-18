@@ -36,10 +36,23 @@ export const HotelProvider = ({ children }) => {
   ]));
 
   const [tasks, setTasks] = useState(() => getInitialData('gloria_tasks', [
-    { id: 1, title: "Room 402 - Plumbing Leak", category: "Maintenance", priority: "Emergency", status: "In Progress", reporter: "Sarah Omondi", time: "08:15 AM", icon: "priority_high" },
-    { id: 2, title: "Suite 505 - Deep Clean", category: "Housekeeping", priority: "Standard", status: "Assigned", time: "09:00 AM", icon: "cleaning_services" },
-    { id: 3, title: "Gym - HVAC Filter", category: "Maintenance", priority: "Standard", status: "Assigned", time: "10:30 AM", icon: "ac_unit" },
-    { id: 4, title: "Lobby - Accent Lighting", category: "Maintenance", priority: "Low Priority", status: "Scheduled", time: "02:00 PM", icon: "lightbulb" }
+    { id: 1, title: "Room 402 - Plumbing Leak", category: "Maintenance", priority: "Emergency", status: "In Progress", reporter: "Sarah Omondi", time: "08:15 AM", icon: "priority_high", assignedTo: "Jean Bosco" },
+    { id: 2, title: "Suite 505 - Deep Clean", category: "Housekeeping", priority: "Standard", status: "Assigned", time: "09:00 AM", icon: "cleaning_services", assignedTo: "Aisha Keza" },
+    { id: 3, title: "Gym - HVAC Filter", category: "Maintenance", priority: "Standard", status: "Assigned", time: "10:30 AM", icon: "ac_unit", assignedTo: "Jean Bosco" },
+    { id: 4, title: "Lobby - Accent Lighting", category: "Maintenance", priority: "Low Priority", status: "Scheduled", time: "02:00 PM", icon: "lightbulb", assignedTo: "Jean Bosco" }
+  ]));
+
+  const [staff, setStaff] = useState(() => getInitialData('gloria_staff', [
+    { id: 1, name: "Sarah Omondi", role: "Concierge", performance: 98.2, status: "Active", level: 3 },
+    { id: 2, name: "Jean Bosco", role: "Maintenance", performance: 85.0, status: "Active", level: 2 },
+    { id: 3, name: "Aisha Keza", role: "Housekeeping", performance: 92.5, status: "Active", level: 3 },
+    { id: 4, name: "Marco G.", role: "Concierge", performance: 98.2, status: "Active", level: 2 },
+    { id: 5, name: "Sarah L.", role: "Reception", performance: 96.5, status: "Active", level: 2 }
+  ]));
+
+  const [staffRequests, setStaffRequests] = useState(() => getInitialData('gloria_staff_requests', [
+    { id: 1, staffId: 3, name: "Aisha Keza", role: "Housekeeper • LVL 3", request: "Requesting overtime shift for Presidential Suite turnover preparation.", status: "Pending" },
+    { id: 2, staffId: 5, name: "Sarah L.", role: "Receptionist • LVL 2", request: "Requesting leave for Saturday morning shift (Family emergency).", status: "Pending" }
   ]));
 
   useEffect(() => {
@@ -48,15 +61,9 @@ export const HotelProvider = ({ children }) => {
     localStorage.setItem('gloria_dining', JSON.stringify(diningReservations));
     localStorage.setItem('gloria_events', JSON.stringify(eventInquiries));
     localStorage.setItem('gloria_tasks', JSON.stringify(tasks));
-  }, [user, reservations, diningReservations, eventInquiries, tasks]);
-
-  const [staff, setStaff] = useState([
-    { id: 1, name: "Sarah Omondi", role: "Concierge", performance: 98.2, status: "Active" },
-    { id: 2, name: "Jean Bosco", role: "Maintenance", performance: 85.0, status: "Active" },
-    { id: 3, name: "Aisha Keza", role: "Housekeeping", performance: 92.5, status: "Active" },
-    { id: 4, name: "Marco G.", role: "Concierge", performance: 98.2, status: "Active" },
-    { id: 5, name: "Sarah L.", role: "Reception", performance: 96.5, status: "Active" }
-  ]);
+    localStorage.setItem('gloria_staff', JSON.stringify(staff));
+    localStorage.setItem('gloria_staff_requests', JSON.stringify(staffRequests));
+  }, [user, reservations, diningReservations, eventInquiries, tasks, staff, staffRequests]);
 
   const addReservation = (reservation) => {
     const newRes = {
@@ -84,11 +91,25 @@ export const HotelProvider = ({ children }) => {
   };
 
   const addTask = (task) => {
-    setTasks(prev => [...prev, { ...task, id: tasks.length + 1, status: "Assigned" }]);
+    const newTask = {
+      ...task,
+      id: tasks.length + 1,
+      status: task.status || "Assigned",
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setTasks(prev => [...prev, newTask]);
   };
 
   const updateTaskStatus = (id, status) => {
     setTasks(prev => prev.map(task => task.id === id ? { ...task, status } : task));
+  };
+
+  const approveStaffRequest = (id) => {
+    setStaffRequests(prev => prev.map(req => req.id === id ? { ...req, status: "Approved" } : req));
+  };
+
+  const denyStaffRequest = (id) => {
+    setStaffRequests(prev => prev.map(req => req.id === id ? { ...req, status: "Denied" } : req));
   };
 
   const login = (email, password) => {
@@ -118,10 +139,13 @@ export const HotelProvider = ({ children }) => {
       eventInquiries,
       tasks,
       staff,
+      staffRequests,
       addReservation,
       updateReservationStatus,
       addTask,
-      updateTaskStatus
+      updateTaskStatus,
+      approveStaffRequest,
+      denyStaffRequest
     }}>
       {children}
     </HotelContext.Provider>
