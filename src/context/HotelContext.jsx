@@ -52,13 +52,19 @@ export const HotelProvider = ({ children }) => {
     }
   }, [user]);
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = async (userId, retryCount = 0) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
-    if (!error) setProfile(data);
+
+    if (!error && data) {
+      setProfile(data);
+    } else if (retryCount < 3) {
+      // Profile might still be being created by the trigger
+      setTimeout(() => fetchProfile(userId, retryCount + 1), 500);
+    }
   };
 
   const fetchCatalog = async () => {
@@ -258,6 +264,12 @@ export const HotelProvider = ({ children }) => {
         }
       }
     });
+
+    if (data?.user && data?.session) {
+      setUser(data.user);
+      fetchProfile(data.user.id);
+    }
+
     return { data, error };
   };
 

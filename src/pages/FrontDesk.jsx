@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
+import { SkeletonTable } from '../components/LoadingSkeleton';
 
 const FrontDesk = () => {
   const { reservations, diningReservations, updateReservationStatus, loading } = useHotel();

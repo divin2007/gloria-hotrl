@@ -2,6 +2,7 @@ import React from 'react';
 import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 import { Link } from 'react-router-dom';
+import { SkeletonLine, SkeletonCard } from '../components/LoadingSkeleton';
 
 const AdminDashboard = () => {
   const { reservations, staff, loading } = useHotel();

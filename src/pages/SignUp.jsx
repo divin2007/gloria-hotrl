@@ -19,8 +19,12 @@ const SignUp = () => {
     setLoading(true);
     const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
     setLoading(false);
+
     if (error) {
       setError(error.message);
+    } else if (data?.user && !data?.session) {
+      // Email confirmation required
+      setError('Account created! Please check your email to confirm your account before signing in.');
     } else {
       navigate('/dashboard/guest');
     }
@@ -29,10 +33,13 @@ const SignUp = () => {
   const handleQuickAccess = async (email) => {
     setError('');
     setLoading(true);
-    const { error } = await signIn(email, 'password123');
+    const { data, error } = await signIn(email, 'password123');
     setLoading(false);
+
     if (error) {
       setError(error.message);
+    } else if (data?.user && !data?.session) {
+      setError('Account created! Please check your email to confirm your account before signing in.');
     } else {
       navigate('/dashboard');
     }
