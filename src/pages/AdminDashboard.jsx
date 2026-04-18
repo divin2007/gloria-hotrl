@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 import { Link } from 'react-router-dom';
 import { SkeletonLine, SkeletonCard } from '../components/LoadingSkeleton';
 
 const AdminDashboard = () => {
-  const { reservations, staff, loading } = useHotel();
+  const { reservations, staff, loading, inviteStaff } = useHotel();
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('staff');
+  const [inviteMsg, setInviteMsg] = useState('');
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    const { error } = await inviteStaff(inviteEmail, inviteRole);
+    if (error) {
+      setInviteMsg(`Error: ${error.message}`);
+    } else {
+      setInviteMsg(`Successfully invited ${inviteEmail} as ${inviteRole}`);
+      setInviteEmail('');
+    }
+  };
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -83,6 +97,40 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid grid-cols-12 gap-10">
+          <div className="col-span-12 md:col-span-12 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-8 shadow-editorial mb-8">
+            <h3 className="font-headline text-2xl text-primary mb-6">Staff Invitations</h3>
+            <p className="text-on-surface-variant text-sm mb-6">Pre-authorize emails to sign up with administrative roles. Only Admin can perform this action.</p>
+            <form onSubmit={handleInvite} className="flex flex-wrap gap-4 items-end">
+              <div className="flex-grow min-w-[200px] space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg"
+                  placeholder="staff@example.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                />
+              </div>
+              <div className="w-48 space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Assign Role</label>
+                <select
+                  className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg"
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value)}
+                >
+                  <option value="staff">Staff</option>
+                  <option value="receptionist">Receptionist</option>
+                  <option value="manager">Manager</option>
+                </select>
+              </div>
+              <button type="submit" className="bg-secondary text-on-secondary px-8 py-3.5 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:brightness-110 transition-all shadow-lg">
+                Invite Staff
+              </button>
+            </form>
+            {inviteMsg && <p className="mt-4 text-xs font-bold text-secondary">{inviteMsg}</p>}
+          </div>
+
           <div className="col-span-12 md:col-span-8 bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-editorial">
             <div className="px-8 py-6 border-b border-outline-variant/15 flex justify-between items-center bg-surface-container-low/30">
               <h3 className="font-serif text-lg text-primary">Recent Transactions</h3>

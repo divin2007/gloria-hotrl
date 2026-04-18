@@ -253,14 +253,20 @@ export const HotelProvider = ({ children }) => {
     }
   };
 
-  const signUp = async (email, password, fullName, role = 'guest') => {
+  const inviteStaff = async (email, role) => {
+    const { error } = await supabase
+      .from('staff_invites')
+      .insert([{ email, role }]);
+    return { error };
+  };
+
+  const signUp = async (email, password, fullName) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          full_name: fullName,
-          role: role
+          full_name: fullName
         }
       }
     });
@@ -289,6 +295,7 @@ export const HotelProvider = ({ children }) => {
       profile,
       signIn,
       signUp,
+      inviteStaff,
       signOut,
       reservations,
       diningReservations,

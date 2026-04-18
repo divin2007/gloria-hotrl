@@ -30,21 +30,6 @@ const SignUp = () => {
     }
   };
 
-  const handleQuickAccess = async (email) => {
-    setError('');
-    setLoading(true);
-    const { data, error } = await signIn(email, 'password123');
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-    } else if (data?.user && !data?.session) {
-      setError('Account created! Please check your email to confirm your account before signing in.');
-    } else {
-      navigate('/dashboard');
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-8 py-12">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-10 editorial-shadow">
@@ -103,35 +88,6 @@ const SignUp = () => {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-dashed border-slate-300 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Internal Portal Access</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <button
-              onClick={() => handleQuickAccess('admin@gloria.com')}
-              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
-            >
-              Admin
-            </button>
-            <button
-              onClick={() => handleQuickAccess('manager@gloria.com')}
-              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
-            >
-              Manager
-            </button>
-            <button
-              onClick={() => handleQuickAccess('receptionist@gloria.com')}
-              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
-            >
-              Receptionist
-            </button>
-            <button
-              onClick={() => handleQuickAccess('staff@gloria.com')}
-              className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
-            >
-              Staff
-            </button>
-          </div>
-        </div>
 
         <div className="mt-8 pt-8 border-t border-outline-variant/30 text-center">
           <p className="text-on-surface-variant text-sm">

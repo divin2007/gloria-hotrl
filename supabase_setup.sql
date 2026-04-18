@@ -20,6 +20,14 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Staff Invites table (For Admin to pre-authorize roles)
+CREATE TABLE IF NOT EXISTS staff_invites (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  email TEXT UNIQUE NOT NULL,
+  role user_role NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Rooms catalog
 CREATE TABLE IF NOT EXISTS rooms (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -59,11 +67,11 @@ CREATE TABLE IF NOT EXISTS dining_venues (
 -- Dining Menu Items
 CREATE TABLE IF NOT EXISTS menu_items (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  category TEXT, -- Food, Drink, Alcohol, Special
-  subcategory TEXT, -- Starters, Signature Mains, Confections, etc.
+  category TEXT,
+  subcategory TEXT,
   name TEXT NOT NULL,
   description TEXT,
-  price TEXT, -- e.g. "12k RWF"
+  price TEXT,
   image_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -107,8 +115,8 @@ CREATE TABLE IF NOT EXISTS event_inquiries (
 CREATE TABLE IF NOT EXISTS tasks (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   title TEXT NOT NULL,
-  category TEXT, -- Maintenance, Housekeeping, Concierge
-  priority TEXT, -- Low Priority, Standard, High, Emergency
+  category TEXT,
+  priority TEXT,
   status TEXT DEFAULT 'Assigned',
   reporter_id UUID REFERENCES auth.users,
   assigned_to_id UUID REFERENCES auth.users,
@@ -133,6 +141,7 @@ CREATE TABLE IF NOT EXISTS staff_requests (
 -- --- SECURITY: ROW LEVEL SECURITY (RLS) ---
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE staff_invites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dining_venues ENABLE ROW LEVEL SECURITY;
@@ -153,6 +162,9 @@ $$ LANGUAGE sql SECURITY DEFINER;
 CREATE POLICY "Public profiles viewable" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
+-- Staff Invites Policies
+CREATE POLICY "Admins manage invites" ON staff_invites FOR ALL USING (public.get_user_role(auth.uid()) = 'admin');
+
 -- Rooms/Venues/Menu Policies
 CREATE POLICY "Public view rooms" ON rooms FOR SELECT USING (true);
 CREATE POLICY "Managers manage rooms" ON rooms FOR ALL USING (public.get_user_role(auth.uid()) IN ('manager', 'admin'));
@@ -171,30 +183,31 @@ CREATE POLICY "View managed reservations" ON reservations FOR SELECT USING (auth
 CREATE POLICY "Create reservations" ON reservations FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Update reservations" ON reservations FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('receptionist', 'manager', 'admin'));
 
-CREATE POLICY "View managed dining" ON dining_reservations FOR SELECT USING (auth.uid() = user_id OR public.get_user_role(auth.uid()) IN ('receptionist', 'manager', 'admin'));
-CREATE POLICY "Create dining" ON dining_reservations FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Update dining" ON dining_reservations FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('receptionist', 'manager', 'admin'));
-
-CREATE POLICY "View managed events" ON event_inquiries FOR SELECT USING (auth.uid() = user_id OR public.get_user_role(auth.uid()) IN ('manager', 'admin'));
-CREATE POLICY "Create event inquiries" ON event_inquiries FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Update event inquiries" ON event_inquiries FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('manager', 'admin'));
-
--- Tasks Policies
-CREATE POLICY "Staff view assigned tasks" ON tasks FOR SELECT USING (auth.uid() = assigned_to_id OR public.get_user_role(auth.uid()) IN ('receptionist', 'manager', 'admin'));
-CREATE POLICY "Managers manage tasks" ON tasks FOR ALL USING (public.get_user_role(auth.uid()) IN ('receptionist', 'manager', 'admin'));
-CREATE POLICY "Staff update tasks" ON tasks FOR UPDATE USING (auth.uid() = assigned_to_id);
-
--- Staff Requests Policies
-CREATE POLICY "Staff view own requests" ON staff_requests FOR SELECT USING (auth.uid() = staff_id OR public.get_user_role(auth.uid()) IN ('manager', 'admin'));
-CREATE POLICY "Staff create requests" ON staff_requests FOR INSERT WITH CHECK (auth.uid() = staff_id);
-CREATE POLICY "Managers update requests" ON staff_requests FOR UPDATE USING (public.get_user_role(auth.uid()) IN ('manager', 'admin'));
-
--- Trigger to create profile on signup
+-- Trigger to create profile on signup (FIXED AND UPDATED FOR INVITES)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  assigned_role user_role;
 BEGIN
+  -- Check if user is in staff_invites
+  SELECT role INTO assigned_role FROM public.staff_invites WHERE email = new.email;
+
+  -- If not invited, default to guest
+  IF assigned_role IS NULL THEN
+    assigned_role := 'guest';
+  END IF;
+
   INSERT INTO public.profiles (id, email, full_name, role)
-  VALUES (new.id, new.email, new.raw_user_meta_data->>'full_name', (new.raw_user_meta_data->>'role')::user_role);
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'full_name', 'Guest'),
+    assigned_role
+  );
+
+  -- Delete the invite if it existed
+  DELETE FROM public.staff_invites WHERE email = new.email;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -207,9 +220,3 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 INSERT INTO rooms (name, description, price, image_url, is_popular, is_top_tier) VALUES
 ('Standard King', 'A serene escape featuring artisanal textures.', 180, 'https://lh3.googleusercontent.com/aida-public/AB6AXuDFrpyURkjBqTpsTRQpX2-9-zX-hrs3IWU3r3dX6GOIJMRp3e2kY9L5f1Pay5fGDWzf1XhGNIL-pBuoW7-_77M1hhNgAy3ob_6T3zIqm-9SWKitblQ8JmBh82y87PDNXSNT5lq2rK2NCRelYpTOJU2BdgV7-7GH-X8sr490Vco2vg3ZFBvju7WEnsS3P6wlFngfuyc4zlc1N6ByO0LT8ViXD6I2eyFzh9LlWp8gdtkQefzKhWFbJhZRUgUeTA7vNdvMvRxrjB3UqYze', true, false),
 ('Deluxe Suite', 'Extended living spaces with panoramic views.', 320, 'https://lh3.googleusercontent.com/aida-public/AB6AXuCGD8oZOP6zoeRii_iKG8cj-JldLoCoz_MZM0R6pFI7kUBEk9wSmgdhkyLX2I7lhAf16zYaytzY1CSeHgRpVfhPESii4CCrFlqbhGp5Wi9BdXFToNvL1WV_NTxBConRxM3aWiiHlcvqZEkoHBJJvoTIfiivIcuY9tteks8_bn_dxA8N6Gnf22XcxVRDRB5v0WnGYTV7jd5SmdMi64BT-DOODRCaS915r-J5Fy0ZRlbdDU3NjB4LiQkjT2YsoCWUn19UAYB815ZSuWd5', false, false);
-
-INSERT INTO dining_venues (name, description, hours, image_url) VALUES
-('The Umurage Room', 'Our flagship restaurant.', '06:30 AM — 11:00 PM', 'https://lh3.googleusercontent.com/aida-public/AB6AXuAu9S8A2cR6MUK0t-LsP5_w6FQLSwjZbDhbLaMIBwN9n6K1Nwb8Mu0JjvpKyg78CixqNRXJHDKeKpM4ycMlirSPm3Bb5UMU6fgpbumwl7Z5y6xu3rZ0FeGboQGjq2UdED9696rNsNrC3MAnxBGGedXDRtcKjfOSO7DLdE32nbVMRxdoIEm7Ni58fq7PMaBQFdd24Peu4VbYzRitdb3Ewe6y7inoUFYQ6iHqjPiUzBul_qksRuxKZBbCFZidC7eb4YGHsltHADwMwddN');
-
-INSERT INTO menu_items (category, subcategory, name, description, price, image_url) VALUES
-('Food', 'Starters', 'Isombe Modernist', 'Cassava leaves velouté, bone marrow emulsion.', '12k RWF', 'https://lh3.googleusercontent.com/aida-public/AB6AXuBEHkrDss2l38B4-Wv8vw_5VwA2UD7r1nfTjZbFo2Le4rMy_-D07brhVpbZj9iS1d0MlKNF1jzjDjMpda4InKv6q75A1_xjN88NFlfLLR9N0nfSPKJwgbJWzfGaJjJZOeGVLSmmDZOIQaxeSrm3WJFurfEse0c0BCgrohmwEx2lxNl_7547KCF1-q2Z12vIhR-1kyd1TO2t3xVO4csDnvD9ZCYIxcL8v-RaIC2m0aj4Rcxi4z7AVzR0x1k9fDrKe9m_vksKYaM6V1nd');
