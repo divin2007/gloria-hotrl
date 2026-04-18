@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { useHotel } from '../context/HotelContext';
 
 const StaffRequest = () => {
   const navigate = useNavigate();
+  const { addStaffRequest } = useHotel();
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     type: 'Overtime',
@@ -12,10 +14,13 @@ const StaffRequest = () => {
     duration: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => navigate('/dashboard/staff'), 3000);
+    const { error } = await addStaffRequest(formData);
+    if (!error) {
+      setSubmitted(true);
+      setTimeout(() => navigate('/dashboard/staff'), 3000);
+    }
   };
 
   return (

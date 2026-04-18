@@ -18,7 +18,8 @@ const ManagerDashboard = () => {
     catalogEvents,
     catalogDining,
     catalogMenu,
-    addCatalogItem
+    addCatalogItem,
+    loading: hotelLoading
   } = useHotel();
   const [loading, setLoading] = useState(true);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -48,9 +49,8 @@ const ManagerDashboard = () => {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!hotelLoading) setLoading(false);
+  }, [hotelLoading]);
 
   const handleOpenTaskModal = (member = null) => {
     setSelectedStaff(member);

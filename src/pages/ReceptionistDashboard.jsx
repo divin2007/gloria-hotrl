@@ -6,15 +6,14 @@ import { SkeletonCard, SkeletonTable } from '../components/LoadingSkeleton';
 import Modal from '../components/Modal';
 
 const ReceptionistDashboard = () => {
-  const { reservations, diningReservations, updateReservationStatus } = useHotel();
+  const { reservations, diningReservations, updateReservationStatus, loading: hotelLoading } = useHotel();
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRes, setSelectedRes] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!hotelLoading) setLoading(false);
+  }, [hotelLoading]);
 
   const pendingRooms = reservations.filter(res => res.status === 'Pending');
   const pendingDining = diningReservations.filter(res => res.status === 'Pending');

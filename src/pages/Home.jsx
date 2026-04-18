@@ -13,8 +13,8 @@ const Home = () => {
       guest: "Website Lead",
       room: "Checking Availability",
       amount: 0,
-      checkIn: "TBD",
-      checkOut: "TBD"
+      checkIn: new Date().toISOString().split('T')[0],
+      checkOut: new Date().toISOString().split('T')[0]
     });
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);

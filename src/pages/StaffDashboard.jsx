@@ -6,15 +6,17 @@ import { SkeletonLine } from '../components/LoadingSkeleton';
 import Modal from '../components/Modal';
 
 const StaffDashboard = () => {
-  const { tasks, updateTaskStatus } = useHotel();
+  const { user, profile, tasks, updateTaskStatus, loading: hotelLoading } = useHotel();
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!hotelLoading) setLoading(false);
+  }, [hotelLoading]);
+
+  // Only show tasks assigned to this staff member
+  const myTasks = tasks.filter(t => t.assignedTo === (profile?.full_name || 'Staff'));
 
   const handleComplete = (task) => {
     setSelectedTask(task);
@@ -39,12 +41,12 @@ const StaffDashboard = () => {
           </div>
           <div className="flex gap-6">
             <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 flex flex-col items-center min-w-[120px] shadow-sm">
-              <span className="text-secondary text-2xl font-semibold">{tasks.length}</span>
+              <span className="text-secondary text-2xl font-semibold">{myTasks.length}</span>
               <span className="text-[9px] uppercase tracking-widest font-bold text-on-surface-variant opacity-60">Daily Tasks</span>
             </div>
             <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 flex flex-col items-center min-w-[120px] shadow-sm">
               <span className="text-primary text-2xl font-semibold">
-                {tasks.filter(t => t.status !== 'Completed').length}
+                {myTasks.filter(t => t.status !== 'Completed').length}
               </span>
               <span className="text-[9px] uppercase tracking-widest font-bold text-on-surface-variant opacity-60">Remaining</span>
             </div>
@@ -62,7 +64,7 @@ const StaffDashboard = () => {
                 <div key={i} className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 shadow-editorial">
                   <SkeletonLine className="h-10 w-full" />
                 </div>
-              )) : tasks.length > 0 ? tasks.map((task) => (
+              )) : myTasks.length > 0 ? myTasks.map((task) => (
                 <div
                   key={task.id}
                   className={`bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 flex items-center justify-between group hover:bg-surface-container-low/20 transition-all shadow-editorial ${

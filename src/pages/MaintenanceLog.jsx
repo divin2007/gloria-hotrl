@@ -13,14 +13,14 @@ const MaintenanceLog = () => {
     category: 'Maintenance'
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addTask({
-      title: `${formData.location} - ${formData.issue}`,
+    await addTask({
+      title: formData.issue,
+      roomNumber: formData.location,
       priority: formData.priority,
       category: formData.category,
-      time: new RegExp('AM|PM').test(new Date().toLocaleTimeString()) ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
-      icon: formData.category === 'Maintenance' ? 'handyman' : 'cleaning_services'
+      assignedTo: 'Unassigned'
     });
     navigate('/staff/tasks');
   };

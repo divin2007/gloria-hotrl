@@ -3,8 +3,8 @@ import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminMaintenance = () => {
-  const { tasks } = useContext(HotelContext);
-  const maintenanceTasks = tasks.filter(t => t.icon !== 'cleaning_services' && !t.title.includes('Clean'));
+  const { tasks, loading } = useContext(HotelContext);
+  const maintenanceTasks = tasks.filter(t => t.category === 'Maintenance');
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -51,18 +51,20 @@ const AdminMaintenance = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
-              {maintenanceTasks.map((task) => (
+              {loading ? (
+                <tr><td colSpan="5" className="px-8 py-10 text-center italic opacity-60">Syncing with operations...</td></tr>
+              ) : maintenanceTasks.map((task) => (
                 <tr key={task.id} className="hover:bg-surface-container-low/20 transition-colors">
-                  <td className="px-8 py-5 text-sm text-on-surface font-bold">{task.title.split(' - ')[0]}</td>
-                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{task.title.split(' - ')[1]}</td>
+                  <td className="px-8 py-5 text-sm text-on-surface font-bold">{task.roomNumber || 'Facility'}</td>
+                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{task.title}</td>
                   <td className="px-8 py-5">
                     <span className={`inline-flex px-3 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${
-                      task.id === 1 ? 'bg-error/10 text-error' : 'bg-secondary/10 text-secondary'
+                      task.priority === 'Emergency' ? 'bg-error/10 text-error' : 'bg-secondary/10 text-secondary'
                     }`}>
-                      {task.id === 1 ? 'Critical' : 'Standard'}
+                      {task.priority}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">David M.</td>
+                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{task.assignedTo || 'Unassigned'}</td>
                   <td className="px-8 py-5 text-[10px] text-on-surface-variant text-right uppercase font-bold opacity-40">{task.time}</td>
                 </tr>
               ))}

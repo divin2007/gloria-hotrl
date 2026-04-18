@@ -5,13 +5,12 @@ import { SkeletonCard, SkeletonTable } from '../components/LoadingSkeleton';
 import { Link } from 'react-router-dom';
 
 const GuestDashboard = () => {
-  const { user, reservations, diningReservations, logout } = useHotel();
+  const { user, profile, reservations, diningReservations, signOut, loading: hotelLoading } = useHotel();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!hotelLoading) setLoading(false);
+  }, [hotelLoading]);
 
   // Filtering logic: show bookings matching user email or anonymous web bookings for 'guest' role
   const guestReservations = reservations.filter(res =>
@@ -42,7 +41,7 @@ const GuestDashboard = () => {
           <div className="flex items-center gap-6">
             <Link to="/rooms" className="bg-primary text-on-primary px-5 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-primary/10">Book a Stay</Link>
             <button
-              onClick={logout}
+              onClick={signOut}
               className="text-[10px] font-bold uppercase tracking-widest text-secondary border border-secondary/20 px-4 py-2 rounded-lg hover:bg-secondary/5 transition-all"
             >
               Sign Out
@@ -55,7 +54,7 @@ const GuestDashboard = () => {
         <header className="flex justify-between items-end mb-16">
           <div>
             <span className="text-secondary font-label text-[10px] uppercase tracking-widest mb-2 block font-bold">Personal Sanctuary</span>
-            <h1 className="font-headline text-5xl text-primary mb-2 tracking-tight transition-all">Welcome, {user?.email?.split('@')[0] || 'Guest'}</h1>
+            <h1 className="font-headline text-5xl text-primary mb-2 tracking-tight transition-all">Welcome, {profile?.full_name || user?.email?.split('@')[0] || 'Guest'}</h1>
             <p className="text-on-surface-variant text-sm font-medium opacity-70">Review and curate your upcoming experiences in Kigali.</p>
           </div>
         </header>

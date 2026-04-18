@@ -4,18 +4,38 @@ import { useHotel } from '../context/HotelContext';
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const { login } = useHotel();
+  const { signUp, signIn } = useHotel();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(formData.email, formData.password);
-    navigate('/dashboard/guest');
+    setError('');
+    setLoading(true);
+    const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      navigate('/dashboard/guest');
+    }
+  };
+
+  const handleQuickAccess = async (email) => {
+    setError('');
+    setLoading(true);
+    const { error } = await signIn(email, 'password123');
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (
@@ -28,6 +48,11 @@ const SignUp = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg text-center font-medium">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Full Name</label>
             <input
@@ -64,9 +89,10 @@ const SignUp = () => {
 
           <button
             type="submit"
-            className="w-full bg-primary text-on-primary py-4 rounded-lg font-medium hover:bg-primary-container transition-colors shadow-lg shadow-primary/10"
+            disabled={loading}
+            className="w-full bg-primary text-on-primary py-4 rounded-lg font-medium hover:bg-primary-container transition-colors shadow-lg shadow-primary/10 disabled:opacity-50"
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
@@ -74,25 +100,25 @@ const SignUp = () => {
           <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Internal Portal Access</p>
           <div className="flex flex-wrap justify-center gap-3">
             <button
-              onClick={() => { login('admin@gloria.com', 'pass'); navigate('/admin'); }}
+              onClick={() => handleQuickAccess('admin@gloria.com')}
               className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
             >
               Admin
             </button>
             <button
-              onClick={() => { login('manager@gloria.com', 'pass'); navigate('/dashboard/manager'); }}
+              onClick={() => handleQuickAccess('manager@gloria.com')}
               className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
             >
               Manager
             </button>
             <button
-              onClick={() => { login('receptionist@gloria.com', 'pass'); navigate('/dashboard/receptionist'); }}
+              onClick={() => handleQuickAccess('receptionist@gloria.com')}
               className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
             >
               Receptionist
             </button>
             <button
-              onClick={() => { login('staff@gloria.com', 'pass'); navigate('/dashboard/staff'); }}
+              onClick={() => handleQuickAccess('staff@gloria.com')}
               className="text-[9px] bg-white border border-outline-variant/30 text-amber-700 font-bold px-2 py-1 rounded hover:bg-amber-50 uppercase"
             >
               Staff

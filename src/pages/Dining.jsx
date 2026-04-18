@@ -203,10 +203,10 @@ const Dining = () => {
                 <div className="space-y-10">
                   {catalogMenu.filter(item => item.category === cat.id).map(item => (
                     <div key={item.id} className="group">
-                      {item.image && (
+                      {(item.image || item.image_url) && (
                         <div className="aspect-video mb-4 overflow-hidden rounded-xl shadow-sm">
                           <img
-                            src={item.image}
+                            src={item.image || item.image_url}
                             alt={item.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />

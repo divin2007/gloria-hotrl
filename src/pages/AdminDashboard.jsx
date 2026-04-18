@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
-  const { reservations, staff } = useHotel();
+  const { reservations, staff, loading } = useHotel();
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -98,7 +98,11 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
-                  {reservations.slice(0, 3).map((res) => (
+                  {loading ? (
+                    <tr>
+                      <td colSpan="4" className="px-8 py-4"><SkeletonLine className="h-20 w-full" /></td>
+                    </tr>
+                  ) : reservations.slice(0, 3).map((res) => (
                     <tr key={res.id} className="hover:bg-surface-container-low transition-colors group">
                       <td className="px-8 py-5">
                         <div className="flex items-center">
@@ -130,7 +134,7 @@ const AdminDashboard = () => {
               <span className="material-symbols-outlined text-on-surface-variant opacity-30">more_vert</span>
             </h3>
             <div className="space-y-8">
-              {staff.slice(0, 3).map((s) => (
+              {loading ? <SkeletonCard /> : staff.slice(0, 3).map((s) => (
                 <div key={s.id} className="flex items-center space-x-4">
                   <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant">
                     <span className="material-symbols-outlined">person</span>

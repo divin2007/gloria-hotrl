@@ -3,7 +3,7 @@ import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const FrontDesk = () => {
-  const { reservations, diningReservations, updateReservationStatus } = useHotel();
+  const { reservations, diningReservations, updateReservationStatus, loading } = useHotel();
 
   const pendingRooms = reservations.filter(res => res.status === 'Pending');
   const pendingDining = diningReservations.filter(res => res.status === 'Pending');
@@ -40,7 +40,7 @@ const FrontDesk = () => {
               </span>
             </div>
 
-            {allPending.map((res) => (
+            {loading ? <SkeletonTable rows={3} /> : allPending.map((res) => (
               <div key={`${res.type || 'Room'}-${res.id}`} className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 flex items-start gap-6 shadow-editorial transition-all hover:bg-surface-container-low/20">
                 <div className="w-24 h-24 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden text-secondary">
                    {res.type === 'Dining' ? (

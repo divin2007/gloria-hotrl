@@ -52,11 +52,11 @@ const Rooms = () => {
                       <div className="bg-surface-container-lowest rounded-2xl h-full overflow-hidden shadow-editorial transition-all duration-500 hover:-translate-y-2 border border-outline-variant/10">
                           <div className={`grid grid-cols-1 ${isLarge ? 'md:grid-cols-2' : ''} h-full`}>
                               <div className="relative h-80 md:h-auto overflow-hidden">
-                                  <img alt={room.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={room.image} />
-                                  {room.popular && (
+                                  <img alt={room.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={room.image || room.image_url} />
+                                  {room.popular || room.is_popular && (
                                       <div className="absolute top-4 left-4 bg-primary text-on-primary px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded">Popular Choice</div>
                                   )}
-                                  {room.topTier && (
+                                  {(room.topTier || room.is_top_tier) && (
                                       <div className="absolute top-4 left-4 bg-secondary text-on-secondary px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded">Top Tier</div>
                                   )}
                               </div>

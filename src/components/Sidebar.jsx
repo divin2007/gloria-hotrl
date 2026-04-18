@@ -4,7 +4,7 @@ import { useHotel } from '../context/HotelContext';
 
 const Sidebar = () => {
   const location = useLocation();
-  const { user } = useHotel();
+  const { user, profile, signOut } = useHotel();
   const [isOpen, setIsOpen] = useState(false);
 
   const links = [
@@ -25,7 +25,7 @@ const Sidebar = () => {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  const isVisible = (linkRoles) => !linkRoles || (user && linkRoles.includes(user.role));
+  const isVisible = (linkRoles) => !linkRoles || (profile && linkRoles.includes(profile.role));
 
   return (
     <>
@@ -110,10 +110,13 @@ const Sidebar = () => {
             <span className="material-symbols-outlined">settings</span>
             <span className="font-sans text-xs font-medium uppercase tracking-wider">Settings</span>
           </Link>
-          <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low">
+          <button
+            onClick={() => { signOut(); setIsOpen(false); }}
+            className="w-full flex items-center space-x-3 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low text-left transition-colors"
+          >
             <span className="material-symbols-outlined">logout</span>
             <span className="font-sans text-xs font-medium uppercase tracking-wider">Logout</span>
-          </Link>
+          </button>
         </div>
       </aside>
     </>

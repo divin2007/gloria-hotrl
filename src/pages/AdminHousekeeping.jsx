@@ -3,8 +3,8 @@ import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminHousekeeping = () => {
-  const { tasks } = useContext(HotelContext);
-  const housekeepingTasks = tasks.filter(t => t.icon === 'cleaning_services' || t.title.includes('Clean'));
+  const { tasks, loading } = useContext(HotelContext);
+  const housekeepingTasks = tasks.filter(t => t.category === 'Housekeeping' || t.title.includes('Clean'));
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -48,14 +48,18 @@ const AdminHousekeeping = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
-              {housekeepingTasks.map((task) => (
+              {loading ? (
+                <tr><td colSpan="5" className="px-8 py-10 text-center italic opacity-60">Syncing with operations...</td></tr>
+              ) : housekeepingTasks.map((task) => (
                 <tr key={task.id} className="hover:bg-surface-container-low/20 transition-colors">
-                  <td className="px-8 py-5 text-sm text-on-surface font-bold">{task.title.split(' - ')[0]}</td>
-                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{task.title.split(' - ')[1]}</td>
-                  <td className="px-8 py-5 text-sm text-on-surface-variant">Team {String.fromCharCode(65 + (task.id % 3))}</td>
+                  <td className="px-8 py-5 text-sm text-on-surface font-bold">{task.roomNumber || 'Room TBD'}</td>
+                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{task.title}</td>
+                  <td className="px-8 py-5 text-sm text-on-surface-variant">{task.assignedTo || 'Unassigned'}</td>
                   <td className="px-8 py-5">
-                    <span className="inline-flex px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest bg-blue-50 text-blue-700">
-                      In Progress
+                    <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+                      task.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'
+                    }`}>
+                      {task.status}
                     </span>
                   </td>
                   <td className="px-8 py-5 text-[10px] text-on-surface-variant text-right uppercase font-bold opacity-40">{task.time}</td>

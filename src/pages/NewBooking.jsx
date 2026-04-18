@@ -42,17 +42,18 @@ const NewBooking = () => {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      addReservation({
-        ...formData,
-        amount: parseFloat(formData.amount) || 0,
-        type: 'Room'
-      });
+    addReservation({
+      ...formData,
+      amount: parseFloat(formData.amount) || 0,
+      type: 'Room'
+    }).then(() => {
       setIsSubmitting(false);
       setSuccess(true);
       setTimeout(() => navigate('/admin/reservations'), 2000);
-    }, 1000);
+    }).catch(err => {
+      setIsSubmitting(false);
+      alert('Error creating booking: ' + err.message);
+    });
   };
 
   if (success) {

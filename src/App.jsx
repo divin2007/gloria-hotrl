@@ -55,10 +55,10 @@ const LayoutWrapper = ({ children }) => {
 
 // Dashboard Redirect Component
 const DashboardRedirect = () => {
-  const { user } = useHotel();
+  const { user, profile } = useHotel();
   if (!user) return <Navigate to="/signin" replace />;
-  if (user.role === 'admin') return <Navigate to="/admin" replace />;
-  return <Navigate to={`/dashboard/${user.role}`} replace />;
+  if (profile?.role === 'admin') return <Navigate to="/admin" replace />;
+  return <Navigate to={`/dashboard/${profile?.role || 'guest'}`} replace />;
 };
 
 function App() {

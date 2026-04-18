@@ -3,7 +3,7 @@ import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminReservations = () => {
-  const { reservations, diningReservations, eventInquiries } = useContext(HotelContext);
+  const { reservations, diningReservations, eventInquiries, loading } = useContext(HotelContext);
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -33,7 +33,9 @@ const AdminReservations = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
-                  {reservations.map((res) => (
+                  {loading ? (
+                    <tr><td colSpan="5" className="px-8 py-10 text-center text-on-surface-variant italic">Loading manifest...</td></tr>
+                  ) : reservations.length > 0 ? reservations.map((res) => (
                     <tr key={res.id} className="hover:bg-surface-container-low/20 transition-colors">
                       <td className="px-8 py-5 text-sm text-on-surface font-bold">{res.name}</td>
                       <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{res.roomType}</td>
@@ -47,7 +49,9 @@ const AdminReservations = () => {
                       </td>
                       <td className="px-8 py-5 text-sm text-on-surface text-right font-serif font-bold">{res.price}</td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr><td colSpan="5" className="px-8 py-10 text-center text-on-surface-variant italic">No room reservations found.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
