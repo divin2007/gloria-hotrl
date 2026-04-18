@@ -66,13 +66,27 @@ const SignIn = () => {
         </form>
 
         <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-dashed border-slate-300 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Staff Access</p>
-          <button
-            onClick={() => navigate('/admin')}
-            className="text-xs text-amber-700 font-semibold hover:text-amber-800 underline"
-          >
-            Enter Management Dashboard Directly
-          </button>
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Internal Testing Access</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <button
+              onClick={() => { login('admin@gloria.com', 'pass'); navigate('/admin'); }}
+              className="text-[10px] text-amber-700 font-bold hover:text-amber-800 underline uppercase"
+            >
+              Admin
+            </button>
+            <button
+              onClick={() => { login('manager@gloria.com', 'pass'); navigate('/dashboard/manager'); }}
+              className="text-[10px] text-amber-700 font-bold hover:text-amber-800 underline uppercase"
+            >
+              Manager
+            </button>
+            <button
+              onClick={() => { login('staff@gloria.com', 'pass'); navigate('/dashboard/staff'); }}
+              className="text-[10px] text-amber-700 font-bold hover:text-amber-800 underline uppercase"
+            >
+              Staff
+            </button>
+          </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-outline-variant/30 text-center">

@@ -6,7 +6,7 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const links = [
-    { name: 'Dashboard', path: '/admin', icon: 'dashboard' },
+    { name: 'Admin Overview', path: '/admin', icon: 'dashboard' },
     { name: 'Reservations', path: '/admin/reservations', icon: 'calendar_month' },
     { name: 'Front Desk', path: '/admin/front-desk', icon: 'concierge' },
     { name: 'Housekeeping', path: '/admin/housekeeping', icon: 'cleaning_services' },

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useHotel } from '../context/HotelContext';
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useHotel();
 
   const navLinks = [
     { name: 'Rooms', path: '/rooms' },
@@ -32,8 +34,11 @@ const Navbar = () => {
           ))}
         </div>
         <div className="flex items-center space-x-6">
-          <Link to="/admin" className="hidden lg:block text-slate-500 font-sans text-xs uppercase tracking-widest border border-slate-200 px-3 py-1 rounded hover:bg-slate-50 transition-colors">Management</Link>
-          <Link to="/signin" className="text-slate-600 dark:text-slate-400 font-sans text-sm tracking-wide hover:text-amber-600 transition-colors duration-300">Sign In</Link>
+          {user ? (
+            <Link to="/dashboard" className="hidden lg:block text-amber-700 font-sans text-xs uppercase tracking-widest border border-amber-200 px-3 py-1 rounded hover:bg-amber-50 transition-colors">Portal</Link>
+          ) : (
+            <Link to="/signin" className="text-slate-600 dark:text-slate-400 font-sans text-sm tracking-wide hover:text-amber-600 transition-colors duration-300">Sign In</Link>
+          )}
           <button
             onClick={() => navigate('/rooms')}
             className="bg-primary-container text-on-primary py-2.5 px-6 rounded-lg text-sm font-medium scale-95 duration-150 ease-in-out hover:bg-primary transition-all"
