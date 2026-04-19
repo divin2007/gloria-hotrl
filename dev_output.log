@@ -1,13 +1,9 @@
 
 > gloria-hotel@1.0.0 dev
-> vite --port 5173
+> vite
 
 
-  VITE v6.4.2  ready in 546 ms
+  VITE v6.4.2  ready in 397 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-10:22:09 AM [vite] (client) page reload supabase_setup.sql
-10:22:09 AM [vite] (client) page reload supabase_setup.sql
-10:43:48 AM [vite] (client) page reload supabase_setup.sql
-10:44:27 AM [vite] (client) page reload supabase_setup.sql
