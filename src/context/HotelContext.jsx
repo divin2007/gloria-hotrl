@@ -145,7 +145,7 @@ export const HotelProvider = ({ children }) => {
   const addReservation = async (reservation) => {
     if (reservation.type === 'Dining') {
       const { data, error } = await supabase.from('dining_reservations').insert([{
-        user_id: user.id,
+        user_id: user?.id || null,
         guest_name: reservation.guest,
         venue_name: reservation.room,
         guests_count: reservation.guests,
@@ -156,7 +156,7 @@ export const HotelProvider = ({ children }) => {
       return { error };
     } else if (reservation.type === 'Event Inquiry') {
       const { data, error } = await supabase.from('event_inquiries').insert([{
-        user_id: user.id,
+        user_id: user?.id || null,
         guest_name: reservation.guest,
         event_type: reservation.eventType,
         guests_count: reservation.guests
@@ -165,7 +165,7 @@ export const HotelProvider = ({ children }) => {
       return { error };
     } else {
       const { data, error } = await supabase.from('reservations').insert([{
-        user_id: user.id,
+        user_id: user?.id || null,
         guest_name: reservation.guest,
         room_name: reservation.room,
         total_amount: reservation.amount,
@@ -193,7 +193,7 @@ export const HotelProvider = ({ children }) => {
       category: task.category,
       priority: task.priority,
       status: "Assigned",
-      reporter_id: user.id,
+      reporter_id: user?.id || null,
       reporter_name: profile?.full_name || "Staff",
       assigned_to_name: task.assignedTo,
       room_number: task.roomNumber,
@@ -219,7 +219,7 @@ export const HotelProvider = ({ children }) => {
 
   const addStaffRequest = async (requestData) => {
     const { error } = await supabase.from('staff_requests').insert([{
-      staff_id: user.id,
+      staff_id: user?.id || null,
       staff_name: profile?.full_name || "Staff",
       staff_role: profile?.role || "Staff",
       request_text: requestData.reason,
