@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import AuthGuard from './components/AuthGuard';
 import Home from './pages/Home';
 import Rooms from './pages/Rooms';
+import RoomDetails from './pages/RoomDetails';
 import Dining from './pages/Dining';
 import Events from './pages/Events';
 import About from './pages/About';
@@ -70,6 +71,7 @@ function App() {
             {/* Guest Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/rooms" element={<Rooms />} />
+            <Route path="/rooms/:id" element={<RoomDetails />} />
             <Route path="/dining" element={<Dining />} />
             <Route path="/events" element={<Events />} />
             <Route path="/about" element={<About />} />

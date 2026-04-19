@@ -252,7 +252,16 @@ export const HotelProvider = ({ children }) => {
     let data = {};
     if (category === 'Rooms') {
       table = 'rooms';
-      data = { name: item.name, description: item.description, price: item.price, image_url: item.image, is_popular: item.popular, is_top_tier: item.topTier };
+      data = {
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        image_url: item.image,
+        is_popular: item.popular,
+        is_top_tier: item.topTier,
+        features: item.amenities || [],
+        gallery: item.gallery || []
+      };
     } else if (category === 'Events') {
       table = 'event_venues';
       data = { name: item.name, description: item.description, capacity: item.capacity, image_url: item.image };

@@ -331,86 +331,94 @@ const ManagerDashboard = () => {
         onClose={() => setShowCatalogModal(false)}
         title={`Add New ${catalogType === 'Menu' ? 'Menu Item' : (catalogType === 'Dining' ? 'Dining Venue' : catalogType.slice(0, -1))}`}
       >
-        <form onSubmit={handleAddCatalogItem} className="space-y-4 p-2 max-h-[70vh] overflow-y-auto staff-scroll">
-            <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Name</label>
-                <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
+        <form onSubmit={handleAddCatalogItem} className="space-y-5 p-2 max-h-[75vh] overflow-y-auto staff-scroll">
+            <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Item Name</label>
+                <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-medium" placeholder="e.g. Presidential Suite" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
             </div>
 
-            <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Image URL</label>
-                <input className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="https://images.unsplash.com/..." value={newItem.image} onChange={e => setNewItem({...newItem, image: e.target.value})} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Cover Image URL</label>
+                  <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="https://images.unsplash.com/..." value={newItem.image} onChange={e => setNewItem({...newItem, image: e.target.value})} />
+              </div>
+              {catalogType === 'Rooms' && (
+                <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Gallery Images (Optional)</label>
+                    <input className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="url1, url2, url3..." value={newItem.galleryInput || ''} onChange={e => setNewItem({...newItem, galleryInput: e.target.value, gallery: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} />
+                </div>
+              )}
             </div>
 
-            <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Description</label>
-                <textarea required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" rows="2" placeholder="Detailed description for guests" value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} />
+            <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Official Description</label>
+                <textarea required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm min-h-[100px]" rows="3" placeholder="Describe the luxury and features for the guest..." value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} />
             </div>
 
             {catalogType === 'Rooms' && (
-                <div className="space-y-4">
+                <div className="space-y-5">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Price per Night ($)</label>
-                            <input required type="number" className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="180" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Price per Night ($)</label>
+                            <input required type="number" className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-bold text-primary" placeholder="180" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
                         </div>
-                        <div className="flex flex-col justify-center space-y-2">
+                        <div className="flex flex-col justify-center space-y-3 px-4">
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={newItem.popular} onChange={e => setNewItem({...newItem, popular: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Popular</span>
+                                <input type="checkbox" checked={newItem.popular} onChange={e => setNewItem({...newItem, popular: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary transition-all" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-primary transition-colors">Mark as Popular</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={newItem.topTier} onChange={e => setNewItem({...newItem, topTier: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Top Tier</span>
+                                <input type="checkbox" checked={newItem.topTier} onChange={e => setNewItem({...newItem, topTier: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary transition-all" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-secondary transition-colors">Top Tier Asset</span>
                             </label>
                         </div>
                     </div>
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Amenities (comma separated)</label>
-                        <input className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="WiFi, AC, Minibar, Balcony" value={newItem.amenityInput || ''} onChange={e => setNewItem({...newItem, amenityInput: e.target.value, amenities: e.target.value.split(',').map(s => s.trim())})} />
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Amenities (comma separated)</label>
+                        <input className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="WiFi, AC, Minibar, Balcony" value={newItem.amenityInput || ''} onChange={e => setNewItem({...newItem, amenityInput: e.target.value, amenities: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} />
                     </div>
                 </div>
             )}
 
             {catalogType === 'Events' && (
-                <div className="space-y-4">
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Guest Capacity</label>
-                        <input required type="number" className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="500" value={newItem.capacity} onChange={e => setNewItem({...newItem, capacity: e.target.value})} />
+                <div className="space-y-5">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Guest Capacity</label>
+                        <input required type="number" className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-bold" placeholder="500" value={newItem.capacity} onChange={e => setNewItem({...newItem, capacity: e.target.value})} />
                     </div>
                 </div>
             )}
 
             {catalogType === 'Dining' && (
-                <div className="space-y-4">
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Operating Hours</label>
-                        <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="06:30 AM — 11:00 PM" value={newItem.hours} onChange={e => setNewItem({...newItem, hours: e.target.value})} />
+                <div className="space-y-5">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Operating Hours</label>
+                        <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl" placeholder="06:30 AM — 11:00 PM" value={newItem.hours} onChange={e => setNewItem({...newItem, hours: e.target.value})} />
                     </div>
                 </div>
             )}
 
             {catalogType === 'Menu' && (
-                <div className="space-y-4">
+                <div className="space-y-5">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Category</label>
-                            <select className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Category</label>
+                            <select className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
                                 <option value="Food">Food</option>
                                 <option value="Drink">Drink</option>
                                 <option value="Alcohol">Alcoholic Beverage</option>
                                 <option value="Special">Hotel Special</option>
                             </select>
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Price Tag</label>
-                            <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="12k RWF" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Price Tag</label>
+                            <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-bold" placeholder="12k RWF" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
                         </div>
                     </div>
                     {newItem.category === 'Food' && (
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Menu Subcategory</label>
-                            <input className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="e.g. Starters, Main Course, Confections" value={newItem.subcategory} onChange={e => setNewItem({...newItem, subcategory: e.target.value})} />
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Menu Subcategory</label>
+                            <input className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="e.g. Starters, Main Course, Confections" value={newItem.subcategory} onChange={e => setNewItem({...newItem, subcategory: e.target.value})} />
                         </div>
                     )}
                 </div>

@@ -4,11 +4,11 @@ import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const NewBooking = () => {
-  const { addReservation } = useHotel();
+  const { addReservation, catalogRooms } = useHotel();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     guest: '',
-    room: 'Standard King',
+    room: catalogRooms[0]?.name || 'Standard King',
     checkIn: '',
     checkOut: '',
     amount: '',
@@ -78,81 +78,89 @@ const NewBooking = () => {
           <p className="text-on-surface-variant font-body text-sm opacity-80 uppercase text-[10px] font-bold">Manual booking entry for walk-ins and phone reservations.</p>
         </header>
 
-        <form onSubmit={handleSubmit} className="bg-surface-container-lowest rounded-2xl p-10 border border-outline-variant/30 shadow-editorial space-y-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <form onSubmit={handleSubmit} className="bg-surface-container-lowest rounded-3xl p-12 border border-outline-variant/20 shadow-2xl space-y-12 backdrop-blur-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Guest Full Name</label>
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block opacity-70">Guest Identity</label>
               <input
                 type="text"
-                placeholder="Michael Henderson"
-                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.guest ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all`}
+                placeholder="Full Name"
+                className={`w-full bg-surface-container-low border border-outline-variant/30 ${errors.guest ? 'border-red-400' : ''} focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm transition-all font-medium`}
                 value={formData.guest}
                 onChange={(e) => {
                   setFormData({...formData, guest: e.target.value});
                   if (errors.guest) setErrors({...errors, guest: null});
                 }}
               />
-              {errors.guest && <p className="text-[10px] text-error font-bold">{errors.guest}</p>}
+              {errors.guest && <p className="text-[10px] text-red-500 font-bold ml-2">{errors.guest}</p>}
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Room Category</label>
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block opacity-70">Selected Sanctuary</label>
               <select
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm"
+                className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm font-medium"
                 value={formData.room}
                 onChange={(e) => setFormData({...formData, room: e.target.value})}
               >
-                <option>Standard King</option>
-                <option>Deluxe Suite</option>
-                <option>Executive Penthouse</option>
-                <option>Savannah Suite</option>
+                {catalogRooms.length > 0 ? (
+                  catalogRooms.map(r => <option key={r.id} value={r.name}>{r.name}</option>)
+                ) : (
+                  <>
+                    <option>Standard King</option>
+                    <option>Deluxe Suite</option>
+                    <option>Executive Penthouse</option>
+                  </>
+                )}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Check-In Date</label>
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block opacity-70">Check-In</label>
               <input
                 type="date"
-                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.checkIn ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm`}
+                className={`w-full bg-surface-container-low border border-outline-variant/30 ${errors.checkIn ? 'border-red-400' : ''} focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm font-medium`}
                 value={formData.checkIn}
                 onChange={(e) => {
                   setFormData({...formData, checkIn: e.target.value});
                   if (errors.checkIn) setErrors({...errors, checkIn: null});
                 }}
               />
-              {errors.checkIn && <p className="text-[10px] text-error font-bold">{errors.checkIn}</p>}
+              {errors.checkIn && <p className="text-[10px] text-red-500 font-bold ml-2">{errors.checkIn}</p>}
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Check-Out Date</label>
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block opacity-70">Check-Out</label>
               <input
                 type="date"
-                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.checkOut ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm`}
+                className={`w-full bg-surface-container-low border border-outline-variant/30 ${errors.checkOut ? 'border-red-400' : ''} focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm font-medium`}
                 value={formData.checkOut}
                 onChange={(e) => {
                   setFormData({...formData, checkOut: e.target.value});
                   if (errors.checkOut) setErrors({...errors, checkOut: null});
                 }}
               />
-              {errors.checkOut && <p className="text-[10px] text-error font-bold">{errors.checkOut}</p>}
+              {errors.checkOut && <p className="text-[10px] text-red-500 font-bold ml-2">{errors.checkOut}</p>}
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Total Rate (USD)</label>
-              <input
-                type="number"
-                placeholder="0.00"
-                className={`w-full bg-surface-container-low border-none border-b-2 ${errors.amount ? 'border-error' : 'border-transparent'} focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm`}
-                value={formData.amount}
-                onChange={(e) => {
-                  setFormData({...formData, amount: e.target.value});
-                  if (errors.amount) setErrors({...errors, amount: null});
-                }}
-              />
-              {errors.amount && <p className="text-[10px] text-error font-bold">{errors.amount}</p>}
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block opacity-70">Negotiated Rate (USD)</label>
+              <div className="relative">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-50 font-bold text-sm">$</span>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  className={`w-full bg-surface-container-low border border-outline-variant/30 ${errors.amount ? 'border-red-400' : ''} focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl pl-10 pr-5 py-4 text-on-surface text-sm font-bold text-primary`}
+                  value={formData.amount}
+                  onChange={(e) => {
+                    setFormData({...formData, amount: e.target.value});
+                    if (errors.amount) setErrors({...errors, amount: null});
+                  }}
+                />
+              </div>
+              {errors.amount && <p className="text-[10px] text-red-500 font-bold ml-2">{errors.amount}</p>}
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Email Address</label>
+              <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block opacity-70">Contact Email</label>
               <input
                 type="email"
-                placeholder="guest@example.com"
-                className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm"
+                placeholder="guest@domain.com"
+                className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm font-medium"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
               />

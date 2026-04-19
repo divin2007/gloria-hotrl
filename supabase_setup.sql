@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS public.rooms (
   is_popular BOOLEAN DEFAULT false,
   is_top_tier BOOLEAN DEFAULT false,
   features TEXT[] DEFAULT '{}',
+  gallery TEXT[] DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
