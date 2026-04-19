@@ -8,3 +8,5 @@
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
 12:16:57 PM [vite] (client) page reload supabase_setup.sql
+1:07:28 PM [vite] (client) hmr update /src/index.css, /src/context/HotelContext.jsx, /src/pages/SignIn.jsx, /src/pages/SignUp.jsx
+1:07:57 PM [vite] (client) page reload supabase_setup.sql
