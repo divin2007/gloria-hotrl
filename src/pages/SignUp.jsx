@@ -22,21 +22,9 @@ const SignUp = () => {
       const { data, error: signUpError } = await signUp(formData.email, formData.password, formData.fullName);
 
       if (signUpError) {
-        // If the trigger failed, try to manually create the profile as a last resort
-        if (signUpError.message.includes('Database error saving new user') && data?.user) {
-          const { error: profileError } = await supabase.from('profiles').insert([{
-            id: data.user.id,
-            email: data.user.email,
-            full_name: formData.fullName,
-            role: 'guest'
-          }]);
-
-          if (!profileError) {
-             setLoading(false);
-             navigate('/dashboard/guest');
-             return;
-          }
-          setError('Account partially created. Please try to Sign In.');
+        // If the trigger failed, it's often due to missing database setup (trigger/function issues)
+        if (signUpError.message.includes('Database error saving new user') || signUpError.status === 500) {
+          setError('Database configuration error. Please ensure you have run the supabase_setup.sql script in your Supabase SQL Editor.');
         } else {
           setError(signUpError.message);
         }

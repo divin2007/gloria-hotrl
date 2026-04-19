@@ -62,9 +62,9 @@ export const HotelProvider = ({ children }) => {
 
       if (!error && data) {
         setProfile(data);
-      } else if (retryCount < 5) {
+      } else if (retryCount < 3) {
         // Profile might still be being created by the trigger
-        setTimeout(() => fetchProfile(userId, retryCount + 1), 1000);
+        setTimeout(() => fetchProfile(userId, retryCount + 1), 1500);
       } else {
         // Final attempt: Create profile if missing (fallback for trigger failure)
         const { data: authUser } = await supabase.auth.getUser();
