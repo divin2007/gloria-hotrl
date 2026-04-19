@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useHotel } from '../context/HotelContext';
+import { supabase } from '../lib/supabase';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -12,16 +13,37 @@ const SignIn = () => {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
+  const [showResend, setShowResend] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setShowResend(false);
     setLoading(true);
     const { data, error } = await signIn(formData.email, formData.password);
     setLoading(false);
     if (error) {
       setError(error.message);
+      if (error.message.toLowerCase().includes('confirm') || error.message.toLowerCase().includes('verified')) {
+        setShowResend(true);
+      }
     } else {
       navigate(from, { replace: true });
+    }
+  };
+
+  const handleResendEmail = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: formData.email,
+    });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+    } else {
+      setError('Confirmation email resent! Please check your inbox.');
+      setShowResend(false);
     }
   };
 
@@ -38,6 +60,15 @@ const SignIn = () => {
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg text-center font-medium">
               {error}
+              {showResend && (
+                <button
+                  type="button"
+                  onClick={handleResendEmail}
+                  className="block w-full mt-2 text-secondary underline hover:text-amber-700"
+                >
+                  Resend confirmation email
+                </button>
+              )}
             </div>
           )}
           <div className="space-y-2">

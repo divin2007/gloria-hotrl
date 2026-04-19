@@ -53,17 +53,35 @@ export const HotelProvider = ({ children }) => {
   }, [user]);
 
   const fetchProfile = async (userId, retryCount = 0) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle(); // Use maybeSingle to avoid errors if not found
 
-    if (!error && data) {
-      setProfile(data);
-    } else if (retryCount < 3) {
-      // Profile might still be being created by the trigger
-      setTimeout(() => fetchProfile(userId, retryCount + 1), 500);
+      if (!error && data) {
+        setProfile(data);
+      } else if (retryCount < 5) {
+        // Profile might still be being created by the trigger
+        setTimeout(() => fetchProfile(userId, retryCount + 1), 1000);
+      } else {
+        // Final attempt: Create profile if missing (fallback for trigger failure)
+        const { data: authUser } = await supabase.auth.getUser();
+        if (authUser?.user) {
+          const { data: newProfile, error: insertError } = await supabase.from('profiles').insert([{
+            id: userId,
+            email: authUser.user.email,
+            full_name: authUser.user.user_metadata?.full_name || 'Guest',
+            role: 'guest'
+          }]).select().maybeSingle();
+
+          if (newProfile) setProfile(newProfile);
+          else if (insertError) console.error("Self-repair failed:", insertError.message);
+        }
+      }
+    } catch (e) {
+      console.error("Profile fetch exception:", e);
     }
   };
 

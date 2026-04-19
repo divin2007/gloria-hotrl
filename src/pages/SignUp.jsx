@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useHotel } from '../context/HotelContext';
+import { supabase } from '../lib/supabase';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -18,22 +19,33 @@ const SignUp = () => {
     setError('');
     setLoading(true);
     try {
-      const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
-      setLoading(false);
+      const { data, error: signUpError } = await signUp(formData.email, formData.password, formData.fullName);
 
-      if (error) {
-        // Special handling for trigger failures which often still create the auth user
-        if (error.message.includes('Database error saving new user')) {
-          setError('Account partially created. Please try to Sign In; if it fails, contact support.');
+      if (signUpError) {
+        // If the trigger failed, try to manually create the profile as a last resort
+        if (signUpError.message.includes('Database error saving new user') && data?.user) {
+          const { error: profileError } = await supabase.from('profiles').insert([{
+            id: data.user.id,
+            email: data.user.email,
+            full_name: formData.fullName,
+            role: 'guest'
+          }]);
+
+          if (!profileError) {
+             setLoading(false);
+             navigate('/dashboard/guest');
+             return;
+          }
+          setError('Account partially created. Please try to Sign In.');
         } else {
-          setError(error.message);
+          setError(signUpError.message);
         }
       } else if (data?.user && !data?.session) {
-        // Email confirmation required
-        setError('Account created! Please check your email to confirm your account before signing in.');
-      } else {
+        setError('Account created! Please check your email to confirm your account.');
+      } else if (data?.user) {
         navigate('/dashboard/guest');
       }
+      setLoading(false);
     } catch (err) {
       setLoading(false);
       setError('An unexpected error occurred. Please try again.');
