@@ -11,3 +11,15 @@
 1:07:28 PM [vite] (client) hmr update /src/index.css, /src/context/HotelContext.jsx, /src/pages/SignIn.jsx, /src/pages/SignUp.jsx
 1:07:57 PM [vite] (client) page reload supabase_setup.sql
 1:26:42 PM [vite] (client) hmr update /src/index.css, /src/context/HotelContext.jsx, /src/pages/SignIn.jsx, /src/pages/SignUp.jsx
+6:43:22 PM [vite] (client) hmr update /src/context/HotelContext.jsx, /src/index.css
+7:43:46 PM [vite] (client) page reload supabase_setup.sql
+8:33:32 PM [vite] (client) page reload supabase_setup.sql
+8:34:03 PM [vite] (client) hmr update /src/context/HotelContext.jsx, /src/index.css
+8:35:05 PM [vite] (client) hmr update /src/pages/Rooms.jsx, /src/index.css
+8:35:33 PM [vite] (client) hmr update /src/pages/ManagerDashboard.jsx, /src/index.css
+8:35:49 PM [vite] (client) hmr update /src/pages/ManagerDashboard.jsx, /src/index.css
+8:36:11 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+8:39:08 PM [vite] (client) hmr update /src/pages/NewBooking.jsx, /src/index.css
+8:39:26 PM [vite] (client) hmr update /src/pages/StaffRequest.jsx, /src/index.css
+8:39:39 PM [vite] (client) hmr update /src/pages/MaintenanceLog.jsx, /src/index.css
+8:44:05 PM [vite] (client) hmr update /src/pages/NewBooking.jsx, /src/index.css
