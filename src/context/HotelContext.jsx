@@ -266,8 +266,12 @@ export const HotelProvider = ({ children }) => {
 
     if (table) {
       const { error } = await supabase.from(table).insert([data]);
-      if (error) console.error(`Error adding to ${table}:`, error.message);
-      fetchCatalog();
+      if (error) {
+        console.error(`Error adding to ${table}:`, error.message);
+        alert(`Failed to add item to ${category}: ${error.message}`);
+      } else {
+        fetchCatalog();
+      }
     }
   };
 
