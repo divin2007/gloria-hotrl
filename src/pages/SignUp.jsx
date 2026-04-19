@@ -17,16 +17,26 @@ const SignUp = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
-    setLoading(false);
+    try {
+      const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
+      setLoading(false);
 
-    if (error) {
-      setError(error.message);
-    } else if (data?.user && !data?.session) {
-      // Email confirmation required
-      setError('Account created! Please check your email to confirm your account before signing in.');
-    } else {
-      navigate('/dashboard/guest');
+      if (error) {
+        // Special handling for trigger failures which often still create the auth user
+        if (error.message.includes('Database error saving new user')) {
+          setError('Account partially created. Please try to Sign In; if it fails, contact support.');
+        } else {
+          setError(error.message);
+        }
+      } else if (data?.user && !data?.session) {
+        // Email confirmation required
+        setError('Account created! Please check your email to confirm your account before signing in.');
+      } else {
+        navigate('/dashboard/guest');
+      }
+    } catch (err) {
+      setLoading(false);
+      setError('An unexpected error occurred. Please try again.');
     }
   };
 
