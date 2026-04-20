@@ -152,40 +152,53 @@ CREATE TABLE IF NOT EXISTS public.event_venues (
 );
 
 -- 3. Open All Permissions & RLS
+-- 3. Open All Permissions & RLS (Idempotent)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Profiles ALL" ON public.profiles;
 CREATE POLICY "Profiles ALL" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.rooms ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Rooms ALL" ON public.rooms;
 CREATE POLICY "Rooms ALL" ON public.rooms FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.reservations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Res ALL" ON public.reservations;
 CREATE POLICY "Res ALL" ON public.reservations FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.dining_reservations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "DiningRes ALL" ON public.dining_reservations;
 CREATE POLICY "DiningRes ALL" ON public.dining_reservations FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.event_inquiries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Event ALL" ON public.event_inquiries;
 CREATE POLICY "Event ALL" ON public.event_inquiries FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Tasks ALL" ON public.tasks;
 CREATE POLICY "Tasks ALL" ON public.tasks FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.staff_requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "StaffReq ALL" ON public.staff_requests;
 CREATE POLICY "StaffReq ALL" ON public.staff_requests FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.room_reviews ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Reviews ALL" ON public.room_reviews;
 CREATE POLICY "Reviews ALL" ON public.room_reviews FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.staff_invites ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Invites ALL" ON public.staff_invites;
 CREATE POLICY "Invites ALL" ON public.staff_invites FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.dining_venues ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "DiningVenues ALL" ON public.dining_venues;
 CREATE POLICY "DiningVenues ALL" ON public.dining_venues FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "MenuItems ALL" ON public.menu_items;
 CREATE POLICY "MenuItems ALL" ON public.menu_items FOR ALL USING (true) WITH CHECK (true);
 
 ALTER TABLE public.event_venues ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "EventVenues ALL" ON public.event_venues;
 CREATE POLICY "EventVenues ALL" ON public.event_venues FOR ALL USING (true) WITH CHECK (true);
 
 -- 4. Grant API access
