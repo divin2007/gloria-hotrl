@@ -24,6 +24,7 @@ export const HotelProvider = ({ children }) => {
   const [catalogEvents, setCatalogEvents] = useState([]);
   const [catalogDining, setCatalogDining] = useState([]);
   const [catalogMenu, setCatalogMenu] = useState([]);
+  const [roomReviews, setRoomReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
@@ -120,13 +121,14 @@ export const HotelProvider = ({ children }) => {
 
   const fetchOperationalData = async () => {
     setLoading(true);
-    const [res, dres, einq, tsk, stf, sreq] = await Promise.all([
+    const [res, dres, einq, tsk, stf, sreq, revs] = await Promise.all([
       supabase.from('reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('dining_reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('event_inquiries').select('*').order('created_at', { ascending: false }),
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').in('role', ['staff', 'receptionist', 'manager', 'admin']),
-      supabase.from('staff_requests').select('*').order('created_at', { ascending: false })
+      supabase.from('staff_requests').select('*').order('created_at', { ascending: false }),
+      supabase.from('room_reviews').select('*').order('created_at', { ascending: false })
     ]);
 
     if (res.data) setReservations(res.data.map(r => ({
@@ -176,6 +178,7 @@ export const HotelProvider = ({ children }) => {
       role: r.staff_role,
       request: r.request_text
     })));
+    if (revs.data) setRoomReviews(revs.data);
     setLoading(false);
   };
 
@@ -252,6 +255,18 @@ export const HotelProvider = ({ children }) => {
   const denyStaffRequest = async (id) => {
     await supabase.from('staff_requests').update({ status: "Denied" }).eq('id', id);
     fetchOperationalData();
+  };
+
+  const addRoomReview = async (review) => {
+    const { data, error } = await supabase.from('room_reviews').insert([{
+        room_id: review.roomId,
+        user_id: user?.id || null,
+        guest_name: profile?.full_name || review.guestName || "Guest",
+        rating: review.rating,
+        comment: review.comment
+    }]).select();
+    if (!error) fetchOperationalData();
+    return { data, error };
   };
 
   const addStaffRequest = async (requestData) => {
@@ -360,6 +375,8 @@ export const HotelProvider = ({ children }) => {
       catalogEvents,
       catalogDining,
       catalogMenu,
+      roomReviews,
+      addRoomReview,
       addReservation,
       updateReservationStatus,
       addTask,
