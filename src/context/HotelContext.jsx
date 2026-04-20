@@ -204,15 +204,38 @@ export const HotelProvider = ({ children }) => {
       if (!error) fetchOperationalData();
       return { error };
     } else {
+      // 1. Date Availability Check
+      // Check if any reservation exists for this room where dates overlap
+      // Overlap formula: (start_a <= end_b) AND (end_a >= start_b)
+      const { data: existing, error: checkError } = await supabase
+        .from('reservations')
+        .select('id')
+        .eq('room_name', reservation.room)
+        .eq('status', 'Settled') // Only count confirmed bookings
+        .lte('check_in', reservation.checkOut)
+        .gte('check_out', reservation.checkIn);
+
+      if (checkError) return { error: checkError };
+      if (existing && existing.length > 0) {
+        return { error: { message: "This room is already occupied during the selected dates." } };
+      }
+
+      // 2. Insert if available
       const { data, error } = await supabase.from('reservations').insert([{
         user_id: user?.id || null,
         guest_name: reservation.guest,
         room_name: reservation.room,
-        total_amount: reservation.amount,
+        total_amount: parseFloat(reservation.amount) || 0,
         check_in: reservation.checkIn,
-        check_out: reservation.checkOut
+        check_out: reservation.checkOut,
+        status: 'Pending'
       }]).select();
-      if (!error) fetchOperationalData();
+
+      if (error) {
+        console.error("Booking failed:", error);
+      } else {
+        fetchOperationalData();
+      }
       return { error };
     }
   };

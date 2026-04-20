@@ -45,9 +45,14 @@ const RoomDetails = () => {
       amount: room.price,
       checkIn: tomorrow.toISOString().split('T')[0],
       checkOut: dayAfter.toISOString().split('T')[0]
+    }).then(({ error }) => {
+      if (error) {
+        setBookingStatus(`Error: ${error.message}`);
+      } else {
+        setBookingStatus("Booking Request Sent!");
+      }
+      setTimeout(() => setBookingStatus(null), 5000);
     });
-    setBookingStatus("Booking Request Sent!");
-    setTimeout(() => setBookingStatus(null), 5000);
   };
 
   const handleReviewSubmit = async (e) => {

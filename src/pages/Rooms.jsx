@@ -19,9 +19,14 @@ const Rooms = () => {
       amount: price,
       checkIn: tomorrow.toISOString().split('T')[0],
       checkOut: dayAfter.toISOString().split('T')[0]
+    }).then(({ error }) => {
+      if (error) {
+        setSuccessMessage(`Error: ${error.message}`);
+      } else {
+        setSuccessMessage(`Booking for ${roomName} requested!`);
+      }
+      setTimeout(() => setSuccessMessage(""), 4000);
     });
-    setSuccessMessage(`Booking for ${roomName} requested!`);
-    setTimeout(() => setSuccessMessage(""), 4000);
   };
 
   return (
