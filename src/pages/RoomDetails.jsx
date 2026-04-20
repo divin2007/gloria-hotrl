@@ -10,6 +10,7 @@ const RoomDetails = () => {
   const [room, setRoom] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const [bookingStatus, setBookingStatus] = useState(null);
+  const [bookingDates, setBookingDates] = useState({ checkIn: '', checkOut: '' });
 
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '', guestName: '' });
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -37,18 +38,19 @@ const RoomDetails = () => {
 
   const images = [room.image_url || room.image, ...(room.gallery || [])].filter(Boolean);
 
-  const handleBook = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayAfter = new Date();
-    dayAfter.setDate(dayAfter.getDate() + 4);
+  const handleBook = (e) => {
+    e.preventDefault();
+    if (!bookingDates.checkIn || !bookingDates.checkOut) {
+      setBookingStatus("Error: Please select dates.");
+      return;
+    }
 
     addReservation({
-      guest: "Guest from Web",
+      guest: profile?.full_name || "Guest from Web",
       room: room.name,
       amount: room.price,
-      checkIn: tomorrow.toISOString().split('T')[0],
-      checkOut: dayAfter.toISOString().split('T')[0]
+      checkIn: bookingDates.checkIn,
+      checkOut: bookingDates.checkOut
     }).then(({ error }) => {
       if (error) {
         setBookingStatus(`Error: ${error.message}`);
@@ -150,21 +152,46 @@ const RoomDetails = () => {
             </div>
           </div>
 
-          <div className="pt-8">
-            <button
-              onClick={handleBook}
-              disabled={!!bookingStatus}
-              className="w-full bg-primary text-on-primary py-5 rounded-none font-bold uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-2xl flex items-center justify-center gap-3"
-            >
-              {bookingStatus ? (
-                <>
-                  <span className="material-symbols-outlined animate-spin text-sm">sync</span>
-                  {bookingStatus}
-                </>
-              ) : (
-                'Secure Reservation'
-              )}
-            </button>
+          <div className="pt-4">
+            <form onSubmit={handleBook} className="bg-surface-container-low p-8 border border-outline-variant/30 space-y-6">
+                <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-secondary mb-2">Reserve Sanctuary</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase opacity-40 tracking-widest">Check-In</label>
+                    <input
+                      required
+                      type="date"
+                      className="w-full bg-background border border-outline-variant/20 px-4 py-3 text-sm focus:border-secondary focus:ring-0 transition-all"
+                      value={bookingDates.checkIn}
+                      onChange={e => setBookingDates({...bookingDates, checkIn: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase opacity-40 tracking-widest">Check-Out</label>
+                    <input
+                      required
+                      type="date"
+                      className="w-full bg-background border border-outline-variant/20 px-4 py-3 text-sm focus:border-secondary focus:ring-0 transition-all"
+                      value={bookingDates.checkOut}
+                      onChange={e => setBookingDates({...bookingDates, checkOut: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={!!bookingStatus}
+                  className="w-full bg-primary text-on-primary py-5 rounded-none font-bold uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {bookingStatus ? (
+                    <>
+                      <span className="material-symbols-outlined animate-spin text-sm">sync</span>
+                      {bookingStatus}
+                    </>
+                  ) : (
+                    'Secure Reservation'
+                  )}
+                </button>
+            </form>
             <p className="text-center text-[10px] text-on-surface-variant mt-4 uppercase tracking-widest font-bold opacity-40">Guaranteed best rate when booking direct</p>
           </div>
         </div>
