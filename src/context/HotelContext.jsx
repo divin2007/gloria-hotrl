@@ -221,15 +221,20 @@ export const HotelProvider = ({ children }) => {
       }
 
       // 2. Insert if available
-      const { data, error } = await supabase.from('reservations').insert([{
+      const bookingData = {
         user_id: user?.id || null,
-        guest_name: reservation.guest,
-        room_name: reservation.room,
+        guest_name: reservation.guest || "Guest",
+        room_name: reservation.room || "Room",
         total_amount: parseFloat(reservation.amount) || 0,
         check_in: reservation.checkIn,
         check_out: reservation.checkOut,
         status: 'Pending'
-      }]).select();
+      };
+
+      const { data, error } = await supabase
+        .from('reservations')
+        .insert([bookingData])
+        .select();
 
       if (error) {
         console.error("Booking failed:", error);

@@ -24,8 +24,12 @@ const RoomDetails = () => {
   if (!room) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-background">
-        <h2 className="font-headline text-3xl text-primary mb-4">Finding Sanctuary...</h2>
-        <p className="text-on-surface-variant mb-8">One moment while we prepare your room preview.</p>
+        <h2 className="font-headline text-3xl text-primary mb-4">{catalogRooms.length === 0 ? 'Loading Catalog...' : 'Sanctuary Not Found'}</h2>
+        <p className="text-on-surface-variant mb-8">
+          {catalogRooms.length === 0
+            ? "Preparing our room collection for you."
+            : "The room you're looking for doesn't exist in our current manifest."}
+        </p>
         <Link to="/rooms" className="text-secondary font-bold uppercase tracking-widest text-[10px] hover:underline">Return to Collection</Link>
       </div>
     );
