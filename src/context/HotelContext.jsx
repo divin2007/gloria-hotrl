@@ -32,7 +32,13 @@ export const HotelProvider = ({ children }) => {
     const hash = window.location.hash;
     if (hash.includes('error_description')) {
       const params = new URLSearchParams(hash.substring(1));
-      setAuthError(params.get('error_description')?.replace(/\+/g, ' '));
+      let errorMsg = params.get('error_description')?.replace(/\+/g, ' ');
+
+      if (hash.includes('otp_expired')) {
+        errorMsg = "Email link is invalid or has expired. This often happens if the website address in Supabase doesn't match your current URL. Please check your Supabase URL Configuration.";
+      }
+
+      setAuthError(errorMsg);
       // Clear hash to prevent repeated error messages
       window.history.replaceState(null, '', window.location.pathname);
     }
