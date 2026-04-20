@@ -3,8 +3,13 @@ import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminHousekeeping = () => {
-  const { tasks, loading } = useContext(HotelContext);
+  const { tasks, loading, catalogRooms } = useContext(HotelContext);
   const housekeepingTasks = tasks.filter(t => t.category === 'Housekeeping' || t.title.includes('Clean'));
+
+  const pending = housekeepingTasks.filter(t => t.status !== 'Completed').length;
+  const inProgress = housekeepingTasks.filter(t => t.status === 'In Progress').length;
+  const readyRooms = catalogRooms.length - pending;
+  const readyPercent = Math.round((readyRooms / (catalogRooms.length || 1)) * 100);
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -16,7 +21,7 @@ const AdminHousekeeping = () => {
             <p className="text-on-surface-variant font-body tracking-wide opacity-80 uppercase text-[10px] font-bold">Room readiness and turndown service management.</p>
           </div>
           <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 text-center min-w-[150px] shadow-sm">
-            <span className="text-secondary text-2xl font-bold">82%</span>
+            <span className="text-secondary text-2xl font-bold">{readyPercent}%</span>
             <span className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-bold opacity-60">Inventory Ready</span>
           </div>
         </header>
@@ -24,15 +29,15 @@ const AdminHousekeeping = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-editorial border-l-4 border-l-secondary">
             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Dirty / Pending</p>
-            <span className="text-3xl font-headline text-primary font-bold">18 Rooms</span>
+            <span className="text-3xl font-headline text-primary font-bold">{pending} Rooms</span>
           </div>
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-editorial border-l-4 border-l-blue-400">
             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">In Progress</p>
-            <span className="text-3xl font-headline text-primary font-bold">06 Rooms</span>
+            <span className="text-3xl font-headline text-primary font-bold">{inProgress} Rooms</span>
           </div>
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-editorial border-l-4 border-l-emerald-400">
             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Clean / Inspected</p>
-            <span className="text-3xl font-headline text-primary font-bold">74 Rooms</span>
+            <span className="text-3xl font-headline text-primary font-bold">{readyRooms} Rooms</span>
           </div>
         </div>
 
@@ -50,6 +55,8 @@ const AdminHousekeeping = () => {
             <tbody className="divide-y divide-outline-variant/10">
               {loading ? (
                 <tr><td colSpan="5" className="px-8 py-10 text-center italic opacity-60">Syncing with operations...</td></tr>
+              ) : housekeepingTasks.length === 0 ? (
+                <tr><td colSpan="5" className="px-8 py-10 text-center text-xs text-on-surface-variant opacity-60 italic">No active housekeeping assignments</td></tr>
               ) : housekeepingTasks.map((task) => (
                 <tr key={task.id} className="hover:bg-surface-container-low/20 transition-colors">
                   <td className="px-8 py-5 text-sm text-on-surface font-bold">{task.roomNumber || 'Room TBD'}</td>
@@ -63,19 +70,6 @@ const AdminHousekeeping = () => {
                     </span>
                   </td>
                   <td className="px-8 py-5 text-[10px] text-on-surface-variant text-right uppercase font-bold opacity-40">{task.time}</td>
-                </tr>
-              ))}
-              {[101, 204, 312, 405].map(room => (
-                <tr key={room} className="hover:bg-surface-container-low/20 transition-colors">
-                  <td className="px-8 py-5 text-sm text-on-surface font-bold">Room {room}</td>
-                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">Turndown Service</td>
-                  <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">Aisha K.</td>
-                  <td className="px-8 py-5">
-                    <span className="inline-flex px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest bg-surface-container-high text-on-surface-variant">
-                      Pending
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-[10px] text-on-surface-variant text-right uppercase font-bold opacity-40">Scheduled</td>
                 </tr>
               ))}
             </tbody>

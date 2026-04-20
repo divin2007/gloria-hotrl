@@ -4,12 +4,31 @@ import Sidebar from '../components/Sidebar';
 import { SkeletonTable } from '../components/LoadingSkeleton';
 
 const FrontDesk = () => {
-  const { reservations, diningReservations, updateReservationStatus, loading } = useHotel();
+  const { reservations, diningReservations, updateReservationStatus, loading, catalogRooms } = useHotel();
 
   const pendingRooms = reservations.filter(res => res.status === 'Pending');
   const pendingDining = diningReservations.filter(res => res.status === 'Pending');
 
   const allPending = [...pendingRooms, ...pendingDining].sort((a, b) => a.id - b.id);
+
+  const today = new Date().toISOString().split('T')[0];
+  const checkInsToday = reservations.filter(r => r.check_in === today).length;
+  const checkOutsToday = reservations.filter(r => r.check_out === today).length;
+
+  const dailySchedule = reservations
+    .filter(r => r.check_in === today || r.check_out === today)
+    .map(r => ({
+      name: r.guest,
+      detail: `${r.room} • ${r.check_in === today ? 'Check-in' : 'Check-out'}`,
+      time: r.check_in === today ? '02:00 PM' : '11:00 AM',
+      vip: r.room?.toLowerCase().includes('suite') || r.room?.toLowerCase().includes('penthouse')
+    }))
+    .slice(0, 5);
+
+  const roomsReady = 100 - (reservations.filter(r => {
+    const now = new Date();
+    return now >= new Date(r.check_in) && now <= new Date(r.check_out);
+  }).length / (catalogRooms.length || 1) * 100);
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -85,12 +104,12 @@ const FrontDesk = () => {
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
                 <span className="material-symbols-outlined text-secondary mb-2">login</span>
                 <p className="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest opacity-60">Check-Ins</p>
-                <p className="text-3xl font-headline text-primary">14</p>
+                <p className="text-3xl font-headline text-primary">{checkInsToday}</p>
               </div>
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">
                 <span className="material-symbols-outlined text-secondary mb-2">logout</span>
                 <p className="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest opacity-60">Check-Outs</p>
-                <p className="text-3xl font-headline text-primary">09</p>
+                <p className="text-3xl font-headline text-primary">{checkOutsToday}</p>
               </div>
             </div>
 
@@ -99,11 +118,9 @@ const FrontDesk = () => {
                 <h3 className="font-headline text-lg text-primary">Daily Schedule</h3>
               </div>
               <div className="divide-y divide-outline-variant/10">
-                {[
-                  { name: "Elena Rodriguez", detail: "Room 402 • Check-out", time: "11:00 AM" },
-                  { name: "VIP: Chen Wei", detail: "Presidential • Check-in", time: "02:00 PM", vip: true },
-                  { name: "Marcus Thorne", detail: "Room 205 • Check-in", time: "03:30 PM" }
-                ].map((item, i) => (
+                {dailySchedule.length === 0 ? (
+                  <p className="p-8 text-center text-xs text-on-surface-variant opacity-60 italic">No scheduled movements today</p>
+                ) : dailySchedule.map((item, i) => (
                   <div key={i} className="flex items-center justify-between p-4 hover:bg-surface-container-low/30 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded flex items-center justify-center ${item.vip ? 'bg-amber-50 text-amber-600' : 'bg-secondary/10 text-secondary'}`}>
@@ -127,8 +144,8 @@ const FrontDesk = () => {
               <img className="absolute inset-0 w-full h-full object-cover brightness-75 group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCznsh_XJvUKo0GFvWil-EjOpOPxlqG7D2nKfUhbJI7tdtPgT1fvg8_YgPKQljl9tGgVW0gLK5LXXsFY9QraZrNQk3cqbVOISUK-Fsa4dFemeWlBOlyax6ruB80-a-YcsA2J-2vBNzfrkGHZIiruK0SoGuZZTjDsfu8BrbL00lQw2neE1hbOQjU9S__PG8SbpkIVan6VmkugFR8ADjKZoXXoXqBo9pQW_2iLWTjMDa4PyQy--07BrM0zbJGuGOeA-sE0c1Xvv6bhCLm"/>
               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/10 to-transparent"></div>
               <div className="absolute bottom-4 left-6">
-                <p className="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest mb-1 opacity-70">Housekeeping Status</p>
-                <h4 className="text-primary font-headline text-xl">82% Rooms Ready</h4>
+                <p className="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest mb-1 opacity-70">Inventory Status</p>
+                <h4 className="text-primary font-headline text-xl">{Math.round(roomsReady)}% Rooms Available</h4>
               </div>
             </div>
           </section>

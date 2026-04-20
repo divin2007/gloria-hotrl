@@ -23,3 +23,8 @@
 8:39:26 PM [vite] (client) hmr update /src/pages/StaffRequest.jsx, /src/index.css
 8:39:39 PM [vite] (client) hmr update /src/pages/MaintenanceLog.jsx, /src/index.css
 8:44:05 PM [vite] (client) hmr update /src/pages/NewBooking.jsx, /src/index.css
+6:05:42 AM [vite] (client) hmr update /src/pages/AdminDashboard.jsx, /src/index.css
+6:10:14 AM [vite] (client) hmr update /src/pages/FrontDesk.jsx, /src/index.css
+6:11:10 AM [vite] (client) hmr update /src/pages/AdminHousekeeping.jsx, /src/index.css
+6:11:54 AM [vite] (client) hmr update /src/pages/AdminMaintenance.jsx, /src/index.css
+6:12:22 AM [vite] (client) hmr update /src/pages/AdminReports.jsx, /src/index.css

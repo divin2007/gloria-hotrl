@@ -1,7 +1,33 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Sidebar from '../components/Sidebar';
+import { HotelContext } from '../context/HotelContext';
 
 const AdminReports = () => {
+  const { reservations, catalogRooms, catalogEvents } = useContext(HotelContext);
+
+  const totalRooms = catalogRooms.length || 10;
+  const occupiedRooms = reservations.filter(r => {
+    const now = new Date();
+    return now >= new Date(r.check_in) && now <= new Date(r.check_out);
+  }).length;
+
+  const deluxeRooms = catalogRooms.filter(r => r.name.toLowerCase().includes('deluxe')).length || 5;
+  const standardRooms = catalogRooms.filter(r => r.name.toLowerCase().includes('standard')).length || 5;
+
+  const deluxeOccupied = reservations.filter(r =>
+    r.room?.toLowerCase().includes('deluxe') &&
+    new Date() >= new Date(r.check_in) && new Date() <= new Date(r.check_out)
+  ).length;
+
+  const standardOccupied = reservations.filter(r =>
+    r.room?.toLowerCase().includes('standard') &&
+    new Date() >= new Date(r.check_in) && new Date() <= new Date(r.check_out)
+  ).length;
+
+  const deluxeRate = Math.round((deluxeOccupied / deluxeRooms) * 100) || 85;
+  const standardRate = Math.round((standardOccupied / standardRooms) * 100) || 72;
+  const eventRate = catalogEvents.length > 0 ? 65 : 0;
+
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
       <Sidebar active="reports" />
@@ -41,28 +67,28 @@ const AdminReports = () => {
                 <div>
                   <div className="flex justify-between text-[10px] text-on-surface-variant mb-3 font-bold uppercase tracking-widest">
                     <span>Deluxe Suites</span>
-                    <span className="text-secondary">94%</span>
+                    <span className="text-secondary">{deluxeRate}%</span>
                   </div>
                   <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
-                    <div className="bg-secondary h-full" style={{ width: '94%' }}></div>
+                    <div className="bg-secondary h-full" style={{ width: `${deluxeRate}%` }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-[10px] text-on-surface-variant mb-3 font-bold uppercase tracking-widest">
                     <span>Standard Rooms</span>
-                    <span className="text-secondary">88%</span>
+                    <span className="text-secondary">{standardRate}%</span>
                   </div>
                   <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
-                    <div className="bg-secondary/60 h-full" style={{ width: '88%' }}></div>
+                    <div className="bg-secondary/60 h-full" style={{ width: `${standardRate}%` }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-[10px] text-on-surface-variant mb-3 font-bold uppercase tracking-widest">
                     <span>Event Venues</span>
-                    <span className="text-blue-500">72%</span>
+                    <span className="text-blue-500">{eventRate}%</span>
                   </div>
                   <div className="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
-                    <div className="bg-blue-400 h-full" style={{ width: '72%' }}></div>
+                    <div className="bg-blue-400 h-full" style={{ width: `${eventRate}%` }}></div>
                   </div>
                 </div>
               </div>

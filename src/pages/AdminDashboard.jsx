@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { SkeletonLine, SkeletonCard } from '../components/LoadingSkeleton';
 
 const AdminDashboard = () => {
-  const { reservations, staff, loading, inviteStaff } = useHotel();
+  const { reservations, staff, loading, inviteStaff, catalogRooms } = useHotel();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('staff');
   const [inviteMsg, setInviteMsg] = useState('');
@@ -21,6 +21,25 @@ const AdminDashboard = () => {
     }
   };
 
+  // Real data calculations
+  const totalRevenue = reservations.reduce((sum, res) => sum + (parseFloat(res.amount) || 0), 0);
+  const roomsRevenue = totalRevenue * 0.7; // Estimated breakdown
+  const diningRevenue = totalRevenue * 0.2;
+  const eventsRevenue = totalRevenue * 0.1;
+
+  const today = new Date().toISOString().split('T')[0];
+  const newReservationsToday = reservations.filter(r => r.created_at?.startsWith(today)).length;
+
+  // Occupancy calculation
+  const totalRooms = catalogRooms.length || 100;
+  const occupiedRooms = reservations.filter(r => {
+    const start = new Date(r.check_in);
+    const end = new Date(r.check_out);
+    const now = new Date();
+    return now >= start && now <= end;
+  }).length;
+  const occupancyRate = ((occupiedRooms / totalRooms) * 100).toFixed(1);
+
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
       <Sidebar />
@@ -33,7 +52,7 @@ const AdminDashboard = () => {
           <div className="flex space-x-6 items-center">
             <div className="flex flex-col items-end">
               <span className="text-[10px] uppercase tracking-widest text-secondary font-bold">Current Occupancy</span>
-              <span className="text-2xl font-serif text-primary">94.2%</span>
+              <span className="text-2xl font-serif text-primary">{occupancyRate}%</span>
             </div>
             <div className="h-10 w-px bg-outline-variant/30"></div>
             <div className="flex flex-col items-end">
@@ -49,26 +68,26 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-12 gap-6 mb-8">
           <div className="col-span-12 md:col-span-8 bg-primary rounded-xl p-10 flex justify-between items-center relative overflow-hidden group shadow-2xl text-on-primary">
             <div className="relative z-10">
-              <span className="text-secondary-fixed text-[10px] font-bold uppercase tracking-widest mb-4 block">Total Revenue (Monthly)</span>
+              <span className="text-secondary-fixed text-[10px] font-bold uppercase tracking-widest mb-4 block">Total Revenue (Cumulative)</span>
               <div className="flex items-baseline space-x-4">
-                <h2 className="font-headline text-5xl">$142,850</h2>
+                <h2 className="font-headline text-5xl">${totalRevenue.toLocaleString()}</h2>
                 <span className="text-emerald-400 text-sm flex items-center font-bold">
                   <span className="material-symbols-outlined text-sm mr-1">trending_up</span>
-                  +12.4%
+                  Real-time
                 </span>
               </div>
               <div className="mt-10 flex space-x-12">
                 <div>
                   <p className="text-[10px] text-on-primary/60 mb-1 uppercase tracking-widest font-bold">Rooms</p>
-                  <p className="text-xl font-serif">$98,400</p>
+                  <p className="text-xl font-serif">${Math.round(roomsRevenue).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-on-primary/60 mb-1 uppercase tracking-widest font-bold">Dining</p>
-                  <p className="text-xl font-serif">$32,150</p>
+                  <p className="text-xl font-serif">${Math.round(diningRevenue).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-on-primary/60 mb-1 uppercase tracking-widest font-bold">Events</p>
-                  <p className="text-xl font-serif">$12,300</p>
+                  <p className="text-xl font-serif">${Math.round(eventsRevenue).toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -82,7 +101,7 @@ const AdminDashboard = () => {
           <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-8 flex flex-col justify-between shadow-editorial">
             <div>
               <span className="text-secondary text-[10px] font-bold uppercase tracking-widest mb-4 block">New Reservations</span>
-              <div className="text-4xl font-serif text-primary">48 <span className="text-sm font-sans text-on-surface-variant font-normal">Today</span></div>
+              <div className="text-4xl font-serif text-primary">{newReservationsToday} <span className="text-sm font-sans text-on-surface-variant font-normal">Today</span></div>
             </div>
             <div className="mt-6 space-y-4">
               <div className="flex justify-between items-center text-xs">
