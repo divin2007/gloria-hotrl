@@ -8,12 +8,17 @@ const Rooms = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleBook = (roomName, price) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfter = new Date();
+    dayAfter.setDate(dayAfter.getDate() + 4);
+
     addReservation({
       guest: "Guest from Web",
       room: roomName,
       amount: price,
-      checkIn: "Oct 25",
-      checkOut: "Oct 28"
+      checkIn: tomorrow.toISOString().split('T')[0],
+      checkOut: dayAfter.toISOString().split('T')[0]
     });
     setSuccessMessage(`Booking for ${roomName} requested!`);
     setTimeout(() => setSuccessMessage(""), 4000);

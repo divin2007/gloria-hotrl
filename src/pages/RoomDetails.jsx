@@ -34,12 +34,17 @@ const RoomDetails = () => {
   const images = [room.image_url || room.image, ...(room.gallery || [])].filter(Boolean);
 
   const handleBook = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfter = new Date();
+    dayAfter.setDate(dayAfter.getDate() + 4);
+
     addReservation({
       guest: "Guest from Web",
       room: room.name,
       amount: room.price,
-      checkIn: "Oct 25",
-      checkOut: "Oct 28"
+      checkIn: tomorrow.toISOString().split('T')[0],
+      checkOut: dayAfter.toISOString().split('T')[0]
     });
     setBookingStatus("Booking Request Sent!");
     setTimeout(() => setBookingStatus(null), 5000);
