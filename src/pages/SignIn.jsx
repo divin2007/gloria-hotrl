@@ -6,9 +6,16 @@ import { supabase } from '../lib/supabase';
 const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn } = useHotel();
+  const { signIn, authError, setAuthError } = useHotel();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+
+  React.useEffect(() => {
+    if (authError) {
+      setError(authError);
+      setAuthError(null);
+    }
+  }, [authError]);
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname || "/dashboard";

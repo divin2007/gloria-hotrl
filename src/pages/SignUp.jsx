@@ -5,7 +5,15 @@ import { supabase } from '../lib/supabase';
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const { signUp, signIn } = useHotel();
+  const { signUp, authError, setAuthError } = useHotel();
+
+  React.useEffect(() => {
+    if (authError) {
+      setError(authError);
+      setAuthError(null);
+    }
+  }, [authError]);
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',

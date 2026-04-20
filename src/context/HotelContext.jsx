@@ -25,8 +25,18 @@ export const HotelProvider = ({ children }) => {
   const [catalogDining, setCatalogDining] = useState([]);
   const [catalogMenu, setCatalogMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
+    // Detect errors from email links in the URL hash
+    const hash = window.location.hash;
+    if (hash.includes('error_description')) {
+      const params = new URLSearchParams(hash.substring(1));
+      setAuthError(params.get('error_description')?.replace(/\+/g, ' '));
+      // Clear hash to prevent repeated error messages
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
     // Check active sessions and subscribe to auth changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
@@ -332,6 +342,8 @@ export const HotelProvider = ({ children }) => {
       signUp,
       inviteStaff,
       signOut,
+      authError,
+      setAuthError,
       reservations,
       diningReservations,
       eventInquiries,
