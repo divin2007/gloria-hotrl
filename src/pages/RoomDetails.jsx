@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 const RoomDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { catalogRooms, addReservation, roomReviews, addRoomReview, user, profile } = useHotel();
+  const { catalogRooms, addReservation, roomReviews, addRoomReview, user, profile, reservations } = useHotel();
   const [room, setRoom] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const [bookingStatus, setBookingStatus] = useState(null);
@@ -77,6 +77,12 @@ const RoomDetails = () => {
 
   const currentReviews = roomReviews.filter(rev => rev.room_id === room.id);
 
+  const upcomingBookings = (catalogRooms.length > 0 && reservations) ? reservations.filter(res =>
+    res.room_name === room.name &&
+    res.status === 'Settled' &&
+    new Date(res.check_out) >= new Date()
+  ).sort((a, b) => new Date(a.check_in) - new Date(b.check_in)) : [];
+
   return (
     <main className="bg-background min-h-screen pb-24">
       <SEO title={`${room.name} | Gloria Hotel`} description={room.description} />
@@ -135,10 +141,27 @@ const RoomDetails = () => {
               <span className="text-3xl font-serif text-primary">${room.price}</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-2 opacity-60">Status</span>
-              <span className="text-lg font-headline text-emerald-700">Immediate Access</span>
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest block mb-2 opacity-60">Availability</span>
+              <span className="text-lg font-headline text-emerald-700">Prime Status</span>
             </div>
           </div>
+
+          {upcomingBookings.length > 0 && (
+            <div className="bg-primary/5 border-l-4 border-secondary p-6 space-y-4">
+               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Occupancy Calendar</h4>
+               <div className="space-y-3">
+                  {upcomingBookings.slice(0, 3).map(b => (
+                    <div key={b.id} className="flex items-center justify-between">
+                       <span className="text-xs font-medium text-on-surface-variant">Reserved</span>
+                       <span className="text-[10px] font-bold text-primary bg-white px-3 py-1 shadow-sm border border-outline-variant/20">
+                          {new Date(b.check_in).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} — {new Date(b.check_out).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                       </span>
+                    </div>
+                  ))}
+               </div>
+               <p className="text-[9px] italic opacity-50">Please select dates outside these ranges to ensure availability.</p>
+            </div>
+          )}
 
           <div className="space-y-6">
             <h3 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">In-Room Curations</h3>
