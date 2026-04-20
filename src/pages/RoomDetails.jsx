@@ -6,10 +6,13 @@ import SEO from '../components/SEO';
 const RoomDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { catalogRooms, addReservation } = useHotel();
+  const { catalogRooms, addReservation, roomReviews, addRoomReview, user, profile } = useHotel();
   const [room, setRoom] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const [bookingStatus, setBookingStatus] = useState(null);
+
+  const [reviewData, setReviewData] = useState({ rating: 5, comment: '', guestName: '' });
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     const foundRoom = catalogRooms.find(r => r.id.toString() === id);
@@ -42,6 +45,22 @@ const RoomDetails = () => {
     setTimeout(() => setBookingStatus(null), 5000);
   };
 
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewData.comment) return;
+    setIsSubmittingReview(true);
+    await addRoomReview({
+        roomId: room.id,
+        rating: reviewData.rating,
+        comment: reviewData.comment,
+        guestName: reviewData.guestName
+    });
+    setReviewData({ rating: 5, comment: '', guestName: '' });
+    setIsSubmittingReview(false);
+  };
+
+  const currentReviews = roomReviews.filter(rev => rev.room_id === room.id);
+
   return (
     <main className="bg-background min-h-screen pb-24">
       <SEO title={`${room.name} | Gloria Hotel`} description={room.description} />
@@ -61,14 +80,14 @@ const RoomDetails = () => {
       <section className="max-w-screen-2xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Gallery Section */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-outline-variant/10">
+          <div className="relative aspect-[4/3] rounded-none overflow-hidden shadow-2xl border border-outline-variant/10">
             <img
               src={images[activeImage]}
               alt={room.name}
               className="w-full h-full object-cover transition-all duration-700 animate-in fade-in"
             />
             {room.is_top_tier && (
-               <div className="absolute top-6 left-6 bg-secondary text-on-secondary px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded shadow-lg">Signature Suite</div>
+               <div className="absolute top-6 left-6 bg-secondary text-on-secondary px-4 py-2 text-[10px] font-bold tracking-widest uppercase rounded-none shadow-lg">Signature Suite</div>
             )}
           </div>
 
@@ -77,7 +96,7 @@ const RoomDetails = () => {
               <button
                 key={idx}
                 onClick={() => setActiveImage(idx)}
-                className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-secondary' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                className={`relative aspect-square rounded-none overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-secondary' : 'border-transparent opacity-60 hover:opacity-100'}`}
               >
                 <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
               </button>
@@ -121,7 +140,7 @@ const RoomDetails = () => {
             <button
               onClick={handleBook}
               disabled={!!bookingStatus}
-              className="w-full bg-primary text-on-primary py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-2xl flex items-center justify-center gap-3"
+              className="w-full bg-primary text-on-primary py-5 rounded-none font-bold uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-2xl flex items-center justify-center gap-3"
             >
               {bookingStatus ? (
                 <>
@@ -135,6 +154,87 @@ const RoomDetails = () => {
             <p className="text-center text-[10px] text-on-surface-variant mt-4 uppercase tracking-widest font-bold opacity-40">Guaranteed best rate when booking direct</p>
           </div>
         </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section className="mt-24 max-w-screen-2xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 border-t border-outline-variant/15 pt-24">
+          <div className="lg:col-span-4 space-y-8">
+              <h3 className="font-headline text-3xl text-primary mb-2">Guest Reflections</h3>
+              <p className="text-on-surface-variant text-sm leading-relaxed mb-8">Hear from fellow travelers who have found sanctuary in our {room.name}.</p>
+
+              <div className="bg-surface-container-low p-8 rounded-none border border-outline-variant/30 shadow-lg">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest mb-6 text-secondary">Share Your Experience</h4>
+                  <form onSubmit={handleReviewSubmit} className="space-y-6">
+                      {!user && (
+                        <input
+                            required
+                            placeholder="Your Name"
+                            className="w-full bg-background border-none border-b border-outline-variant/30 focus:border-secondary focus:ring-0 px-0 py-2 text-sm transition-all"
+                            value={reviewData.guestName}
+                            onChange={e => setReviewData({...reviewData, guestName: e.target.value})}
+                        />
+                      )}
+                      <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map(star => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setReviewData({...reviewData, rating: star})}
+                                className={`material-symbols-outlined text-2xl transition-colors ${reviewData.rating >= star ? 'text-amber-500 fill-1' : 'text-on-surface-variant opacity-30'}`}
+                                style={{ fontVariationSettings: reviewData.rating >= star ? "'FILL' 1" : "'FILL' 0" }}
+                              >
+                                star
+                              </button>
+                          ))}
+                      </div>
+                      <textarea
+                          required
+                          placeholder="Your thoughts..."
+                          rows="4"
+                          className="w-full bg-background border-none border-b border-outline-variant/30 focus:border-secondary focus:ring-0 px-0 py-2 text-sm transition-all resize-none"
+                          value={reviewData.comment}
+                          onChange={e => setReviewData({...reviewData, comment: e.target.value})}
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSubmittingReview}
+                        className="w-full bg-primary text-on-primary py-3 font-bold uppercase tracking-widest text-[10px] hover:brightness-110 transition-all shadow-xl disabled:opacity-50"
+                      >
+                        {isSubmittingReview ? 'Syncing...' : 'Post Reflection'}
+                      </button>
+                  </form>
+              </div>
+          </div>
+
+          <div className="lg:col-span-8">
+              <div className="space-y-12">
+                  {currentReviews.length === 0 ? (
+                      <div className="py-20 text-center border border-dashed border-outline-variant/30 rounded-none bg-surface-container-lowest">
+                          <span className="material-symbols-outlined text-on-surface-variant opacity-20 text-5xl mb-4">rate_review</span>
+                          <p className="text-on-surface-variant font-body italic">Be the first to leave a reflection on this sanctuary.</p>
+                      </div>
+                  ) : currentReviews.map(rev => (
+                      <div key={rev.id} className="group border-b border-outline-variant/10 pb-12 last:border-0">
+                          <div className="flex justify-between items-start mb-4">
+                              <div>
+                                  <h5 className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">{rev.guest_name}</h5>
+                                  <div className="flex gap-0.5">
+                                      {[...Array(5)].map((_, i) => (
+                                          <span key={i} className={`material-symbols-outlined text-xs ${i < rev.rating ? 'text-amber-500' : 'text-on-surface-variant opacity-20'}`} style={{ fontVariationSettings: i < rev.rating ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                                      ))}
+                                  </div>
+                              </div>
+                              <span className="text-[10px] text-on-surface-variant opacity-40 font-bold uppercase tracking-tighter">
+                                  {new Date(rev.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                          </div>
+                          <p className="text-on-surface font-body leading-relaxed max-w-2xl opacity-80">
+                              "{rev.comment}"
+                          </p>
+                      </div>
+                  ))}
+              </div>
+          </div>
       </section>
 
       {/* Editorial Quote */}

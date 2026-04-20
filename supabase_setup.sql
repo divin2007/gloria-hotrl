@@ -199,6 +199,25 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 -- 6. INITIAL SEED DATA
+-- Room Reviews
+CREATE TABLE IF NOT EXISTS public.room_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_id BIGINT REFERENCES public.rooms(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users ON DELETE SET NULL,
+  guest_name TEXT NOT NULL,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.room_reviews ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Reviews viewable" ON public.room_reviews;
+CREATE POLICY "Reviews viewable" ON public.room_reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Reviews insert" ON public.room_reviews;
+CREATE POLICY "Reviews insert" ON public.room_reviews FOR INSERT WITH CHECK (true);
+
+GRANT ALL ON public.room_reviews TO anon, authenticated, service_role;
+
 INSERT INTO public.rooms (name, description, price, features, image_url, is_popular)
 VALUES
 ('Standard King', 'A serene escape featuring artisanal textures and a signature King-sized mattress.', 180, ARRAY['WiFi', 'Climate Control', 'Service'], 'https://lh3.googleusercontent.com/aida-public/AB6AXuDFrpyURkjBqTpsTRQpX2-9-zX-hrs3IWU3r3dX6GOIJMRp3e2kY9L5f1Pay5fGDWzf1XhGNIL-pBuoW7-_77M1hhNgAy3ob_6T3zIqm-9SWKitblQ8JmBh82y87PDNXSNT5lq2rK2NCRelYpTOJU2BdgV7-7GH-X8sr490Vco2vg3ZFBvju7WEnsS3P6wlFngfuyc4zlc1N6ByO0LT8ViXD6I2eyFzh9LlWp8gdtkQefzKhWFbJhZRUgUeTA7vNdvMvRxrjB3UqYze', true),
