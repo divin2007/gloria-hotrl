@@ -25,18 +25,31 @@ export const HotelProvider = ({ children }) => {
   const [catalogDining, setCatalogDining] = useState([]);
   const [catalogMenu, setCatalogMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
+    // Detect errors from email links in the URL hash
+    const hash = window.location.hash;
+    if (hash.includes('error_description')) {
+      const params = new URLSearchParams(hash.substring(1));
+      setAuthError(params.get('error_description')?.replace(/\+/g, ' '));
+      // Clear hash to prevent repeated error messages
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
     // Check active sessions and subscribe to auth changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user.id);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+        if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+          console.log("Session established via email confirmation link");
+        }
       } else {
         setProfile(null);
       }
@@ -298,7 +311,8 @@ export const HotelProvider = ({ children }) => {
       options: {
         data: {
           full_name: fullName
-        }
+        },
+        emailRedirectTo: window.location.origin
       }
     });
 
@@ -328,6 +342,8 @@ export const HotelProvider = ({ children }) => {
       signUp,
       inviteStaff,
       signOut,
+      authError,
+      setAuthError,
       reservations,
       diningReservations,
       eventInquiries,

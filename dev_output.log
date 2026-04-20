@@ -28,3 +28,8 @@
 6:11:10 AM [vite] (client) hmr update /src/pages/AdminHousekeeping.jsx, /src/index.css
 6:11:54 AM [vite] (client) hmr update /src/pages/AdminMaintenance.jsx, /src/index.css
 6:12:22 AM [vite] (client) hmr update /src/pages/AdminReports.jsx, /src/index.css
+10:18:49 AM [vite] vite.config.js changed, restarting server...
+10:18:50 AM [vite] server restarted.
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: use --host to expose
