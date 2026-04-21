@@ -201,6 +201,18 @@ CREATE TABLE IF NOT EXISTS public.menu_items (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Notifications
+CREATE TABLE IF NOT EXISTS public.notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE,
+  role public.user_role, -- Optional: target a specific role instead of a specific user
+  title TEXT NOT NULL,
+  message TEXT,
+  type TEXT, -- 'task', 'booking', 'maintenance', 'financial'
+  is_read BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 4. HARDENED SECURITY & RLS POLICIES
 
 -- Enable RLS on all tables
@@ -220,6 +232,7 @@ ALTER TABLE public.staff_invites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.dining_venues ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.event_venues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Helper Function to check if user is staff/admin
 CREATE OR REPLACE FUNCTION public.is_staff()
@@ -228,6 +241,16 @@ RETURNS BOOLEAN AS $$
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid()
     AND role IN ('staff', 'receptionist', 'manager', 'admin')
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Helper Function to check if user is manager/admin
+CREATE OR REPLACE FUNCTION public.is_manager()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+    AND role IN ('manager', 'admin')
   );
 $$ LANGUAGE sql SECURITY DEFINER;
 
@@ -240,8 +263,8 @@ CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING
 -- Rooms Policies
 DROP POLICY IF EXISTS "Rooms are viewable by everyone" ON public.rooms;
 CREATE POLICY "Rooms are viewable by everyone" ON public.rooms FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Only staff can modify rooms" ON public.rooms;
-CREATE POLICY "Only staff can modify rooms" ON public.rooms FOR ALL USING (public.is_staff());
+DROP POLICY IF EXISTS "Only managers can modify rooms" ON public.rooms;
+CREATE POLICY "Only managers can modify rooms" ON public.rooms FOR ALL USING (public.is_manager());
 
 -- Reservations Policies
 DROP POLICY IF EXISTS "Users can view own reservations" ON public.reservations;
@@ -276,6 +299,20 @@ CREATE POLICY "Staff can view inventory" ON public.inventory_items FOR SELECT US
 
 DROP POLICY IF EXISTS "Staff can track usage" ON public.inventory_usage;
 CREATE POLICY "Staff can track usage" ON public.inventory_usage FOR INSERT WITH CHECK (public.is_staff());
+
+-- Notifications Policies
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (
+  auth.uid() = user_id OR
+  (role IS NOT NULL AND role = (SELECT role FROM public.profiles WHERE id = auth.uid()))
+);
+
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
+
+-- System can create notifications
+DROP POLICY IF EXISTS "Anyone can create notifications" ON public.notifications;
+CREATE POLICY "Anyone can create notifications" ON public.notifications FOR INSERT WITH CHECK (true);
 
 -- Other Catalog tables (Dining, Events, Menu)
 DROP POLICY IF EXISTS "Catalog is viewable by everyone" ON public.dining_venues;
