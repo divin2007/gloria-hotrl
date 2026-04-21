@@ -29,6 +29,7 @@ export const HotelProvider = ({ children }) => {
   const [inventoryUsage, setInventoryUsage] = useState([]);
   const [inventoryItems, setInventoryItems] = useState([]);
   const [pricingLog, setPricingLog] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
@@ -73,8 +74,56 @@ export const HotelProvider = ({ children }) => {
     fetchCatalog();
     if (user) {
       fetchOperationalData();
+      subscribeToNotifications();
     }
   }, [user]);
+
+  const subscribeToNotifications = () => {
+    if (!user) return;
+
+    // Initial fetch of unread notifications
+    supabase
+      .from('notifications')
+      .select('*')
+      .or(`user_id.eq.${user.id},role.eq.${profile?.role}`)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) setNotifications(data);
+      });
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('realtime_notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setNotifications(prev => [payload.new, ...prev]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `role=eq.${profile?.role}`
+        },
+        (payload) => {
+          setNotifications(prev => [payload.new, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
 
   const fetchProfile = async (userId, retryCount = 0) => {
     try {
@@ -213,6 +262,23 @@ export const HotelProvider = ({ children }) => {
     setLoading(false);
   };
 
+  const addNotification = async (notification) => {
+    // This function inserts into the DB, which triggers real-time for the target
+    const { data, error } = await supabase.from('notifications').insert([notification]).select();
+    return { data, error };
+  };
+
+  const markNotificationRead = async (id) => {
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+  };
+
+  const markAllNotificationsRead = async () => {
+    if (!user) return;
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+  };
+
   const addReservation = async (reservation) => {
     if (reservation.type === 'Dining') {
       const { data, error } = await supabase.from('dining_reservations').insert([{
@@ -223,7 +289,15 @@ export const HotelProvider = ({ children }) => {
         reservation_time: reservation.time,
         special_requests: reservation.specialRequests
       }]).select();
-      if (!error) fetchOperationalData();
+      if (!error) {
+        fetchOperationalData();
+        addNotification({
+            role: 'receptionist',
+            title: 'New Dining Reservation',
+            message: `${reservation.guest} booked a table at ${reservation.room} for ${reservation.time}.`,
+            type: 'booking'
+        });
+      }
       return { error };
     } else if (reservation.type === 'Event Inquiry') {
       const { data, error } = await supabase.from('event_inquiries').insert([{
@@ -271,6 +345,12 @@ export const HotelProvider = ({ children }) => {
         console.error("Booking failed:", error);
       } else {
         fetchOperationalData();
+        addNotification({
+            role: 'receptionist',
+            title: 'New Room Booking',
+            message: `${bookingData.guest_name} reserved ${bookingData.room_name} from ${bookingData.check_in} to ${bookingData.check_out}.`,
+            type: 'booking'
+        });
       }
       return { error };
     }
@@ -278,16 +358,27 @@ export const HotelProvider = ({ children }) => {
 
   const updateReservationStatus = async (id, status) => {
     // Attempt update on all three tables since we don't know which one it is from the ID alone in this simplified logic
-    await Promise.all([
-      supabase.from('reservations').update({ status }).eq('id', id),
-      supabase.from('dining_reservations').update({ status }).eq('id', id),
-      supabase.from('event_inquiries').update({ status }).eq('id', id)
+    const results = await Promise.all([
+      supabase.from('reservations').update({ status }).eq('id', id).select(),
+      supabase.from('dining_reservations').update({ status }).eq('id', id).select(),
+      supabase.from('event_inquiries').update({ status }).eq('id', id).select()
     ]);
+
+    // Trigger notification for check-ins/outs
+    if (status === 'Settled') {
+       addNotification({
+          role: 'manager',
+          title: 'Guest Check-in',
+          message: `A guest has been checked into the system.`,
+          type: 'booking'
+       });
+    }
+
     fetchOperationalData();
   };
 
   const addTask = async (task) => {
-    const { error } = await supabase.from('tasks').insert([{
+    const taskData = {
       title: task.title,
       category: task.category,
       priority: task.priority,
@@ -297,13 +388,86 @@ export const HotelProvider = ({ children }) => {
       assigned_to_name: task.assignedTo,
       room_number: task.roomNumber,
       task_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }]);
-    if (!error) fetchOperationalData();
+    };
+
+    const { data, error } = await supabase.from('tasks').insert([taskData]).select();
+
+    if (!error) {
+        fetchOperationalData();
+        // Notify Staff if assigned
+        if (task.assignedTo && task.assignedTo !== 'Unassigned') {
+           const staffMember = staff.find(s => s.name === task.assignedTo);
+           if (staffMember) {
+              addNotification({
+                 user_id: staffMember.id,
+                 title: 'New Task Assigned',
+                 message: `${task.category} at ${task.roomNumber || 'General Area'}: ${task.title}. Priority: ${task.priority}.`,
+                 type: 'task'
+              });
+           }
+        }
+        // Notify Manager if task was logged (maintenance issue)
+        if (task.category === 'Maintenance' || task.category === 'Engineering') {
+           addNotification({
+              role: 'manager',
+              title: 'New Maintenance Issue Logged',
+              message: `A new ${task.category} issue was reported for ${task.roomNumber || 'Facility'}: ${task.title}`,
+              type: 'maintenance'
+           });
+        }
+    }
+  };
+
+  const updateTask = async (id, updates) => {
+    const { data: oldTask } = await supabase.from('tasks').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('tasks').update({
+      ...updates,
+      completed_at: updates.status === 'Completed' ? new Date().toISOString() : null
+    }).eq('id', id).select();
+
+    if (!error && data) {
+      const task = data[0];
+      fetchOperationalData();
+
+      // Trigger notifications for changes
+      if (updates.assignedTo && updates.assignedTo !== oldTask.assigned_to_name) {
+         const staffMember = staff.find(s => s.name === updates.assignedTo);
+         if (staffMember) {
+            addNotification({
+               user_id: staffMember.id,
+               title: 'New Task Reassigned',
+               message: `You have been reassigned to: ${task.title} at ${task.room_number || 'Facility'}.`,
+               type: 'task'
+            });
+         }
+      }
+
+      if (updates.priority && updates.priority !== oldTask.priority) {
+         const staffMember = staff.find(s => s.name === task.assigned_to_name);
+         if (staffMember) {
+            addNotification({
+               user_id: staffMember.id,
+               title: 'Task Priority Changed',
+               message: `Task "${task.title}" is now marked as ${updates.priority}.`,
+               type: 'task'
+            });
+         }
+      }
+
+      if (updates.status === 'Completed') {
+        addNotification({
+            role: 'manager',
+            title: 'Task Completed',
+            message: `Staff member ${task.assigned_to_name} completed task: ${task.title} at ${task.room_number || 'Facility'}.`,
+            type: 'task'
+        });
+      }
+    }
+    return { data, error };
   };
 
   const updateTaskStatus = async (id, status) => {
-    await supabase.from('tasks').update({ status }).eq('id', id);
-    fetchOperationalData();
+    return updateTask(id, { status });
   };
 
   const approveStaffRequest = async (id) => {
@@ -397,10 +561,20 @@ export const HotelProvider = ({ children }) => {
     }
 
     if (table) {
+      // Ensure only managers can update
+      if (profile?.role !== 'manager' && profile?.role !== 'admin') {
+         alert("Unauthorized: Only managers can update catalog items.");
+         return;
+      }
+
       const { error } = await supabase.from(table).update(data).eq('id', id);
       if (error) {
         console.error(`Error updating ${table}:`, error.message);
-        alert(`Failed to update room: ${error.message}`);
+        if (error.message.includes('column "status" of relation "rooms" does not exist')) {
+            alert("Database Error: The 'status' column is missing. Please run the updated supabase_setup.sql script.");
+        } else {
+            alert(`Failed to update room: ${error.message}`);
+        }
       } else {
         fetchCatalog();
       }
@@ -491,6 +665,10 @@ export const HotelProvider = ({ children }) => {
       addCatalogItem,
       updateCatalogItem,
       deleteCatalogItem,
+      updateTask,
+      notifications,
+      markNotificationRead,
+      markAllNotificationsRead,
       guestCharges,
       inventoryUsage,
       inventoryItems,

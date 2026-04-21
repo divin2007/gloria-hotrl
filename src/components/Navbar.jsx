@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useHotel } from '../context/HotelContext';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const location = useLocation();
@@ -34,6 +35,7 @@ const Navbar = () => {
           ))}
         </div>
         <div className="flex items-center space-x-6">
+          {user && <NotificationBell />}
           {user ? (
             <Link to="/dashboard" className="hidden lg:block text-amber-700 font-sans text-xs uppercase tracking-widest border border-amber-200 px-3 py-1 rounded hover:bg-amber-50 transition-colors">Portal</Link>
           ) : (
