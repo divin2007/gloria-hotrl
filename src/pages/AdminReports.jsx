@@ -26,7 +26,9 @@ const AdminReports = () => {
 
   // 1. Occupancy Analytics
   const occupancyStats = useMemo(() => {
-    const total = catalogRooms.length || 1;
+    const total = catalogRooms.length;
+    if (total === 0) return { rate: 0, total: 0, Clean: 0, Dirty: 0, Maintenance: 0, Occupied: 0, trend: [] };
+
     const now = new Date();
     const occupied = reservations.filter(r =>
       now >= new Date(r.checkIn) && now <= new Date(r.checkOut) && r.status === 'Settled'
@@ -38,10 +40,22 @@ const AdminReports = () => {
       return acc;
     }, { Clean: 0, Dirty: 0, Maintenance: 0, Occupied: occupied });
 
+    // Calculate actual weekly occupancy trend
+    const trend = [...Array(7)].map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const dateStr = d.toISOString().split('T')[0];
+        const dayOccupied = reservations.filter(r =>
+           r.status === 'Settled' && dateStr >= r.checkIn && dateStr <= r.checkOut
+        ).length;
+        return Math.round((dayOccupied / total) * 100);
+    });
+
     return {
       rate: Math.round((occupied / total) * 100),
       total,
       occupied,
+      trend,
       ...statusCounts
     };
   }, [catalogRooms, reservations]);
@@ -56,15 +70,26 @@ const AdminReports = () => {
     // ADR: Total Room Revenue / Rooms Sold
     const roomCharges = guestCharges.filter(c => c.category === 'Room');
     const roomRevenue = roomCharges.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
-    const roomsSold = roomCharges.length || 1;
+    const roomsSold = roomCharges.length;
 
-    const adr = roomRevenue / roomsSold;
+    const adr = roomsSold > 0 ? roomRevenue / roomsSold : 0;
     const revpar = roomRevenue / totalAvailableRooms;
+
+    // Actual revenue trend for the last 7 days
+    const revenueTrend = [...Array(7)].map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const dateStr = d.toISOString().split('T')[0];
+        return guestCharges
+            .filter(c => c.created_at?.startsWith(dateStr))
+            .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+    });
 
     return {
       totalRevenue,
       adr: adr.toFixed(2),
       revpar: revpar.toFixed(2),
+      revenueTrend,
       pricingHistory: pricingLog.slice(-5).reverse()
     };
   }, [guestCharges, catalogRooms, pricingLog, isManager]);
@@ -252,10 +277,12 @@ const AdminReports = () => {
                       </div>
                    </div>
                    <div className="bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/30 shadow-editorial">
-                      <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-6 opacity-60">Weekly Trend</h4>
+                      <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-6 opacity-60">Weekly Occupancy Trend</h4>
                       <div className="flex items-end justify-between h-32 gap-2">
-                         {[40, 55, 45, 70, 85, 90, 65].map((h, i) => (
-                           <div key={i} className="flex-1 bg-secondary/10 rounded-t-sm hover:bg-secondary/30 transition-all cursor-help" style={{ height: `${h}%` }}></div>
+                         {occupancyStats.trend.map((h, i) => (
+                           <div key={i} title={`${h}% Occupied`} className="flex-1 bg-secondary/10 rounded-t-sm hover:bg-secondary/30 transition-all cursor-help relative group" style={{ height: `${Math.max(h, 5)}%` }}>
+                              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-primary text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">{h}%</div>
+                           </div>
                          ))}
                       </div>
                    </div>
@@ -270,7 +297,10 @@ const AdminReports = () => {
                    <div className="bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/30 shadow-editorial text-center">
                       <span className="material-symbols-outlined text-4xl text-secondary mb-4">timer</span>
                       <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Avg. Turnover Time</p>
-                      <p className="text-5xl font-headline text-primary">{housekeepingStats.avgTurnover} <span className="text-sm font-sans font-medium text-on-surface-variant">min</span></p>
+                      <p className="text-5xl font-headline text-primary">
+                        {housekeepingStats.avgTurnover || '--'}
+                        {housekeepingStats.avgTurnover > 0 && <span className="text-sm font-sans font-medium text-on-surface-variant ml-2">min</span>}
+                      </p>
                    </div>
                    <div className="bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/30 shadow-editorial text-center">
                       <span className="material-symbols-outlined text-4xl text-secondary mb-4">task_alt</span>
@@ -321,6 +351,20 @@ const AdminReports = () => {
             {/* REVENUE TAB (RBAC) */}
             {activeTab === 'revenue' && isManager && (
               <div className="grid grid-cols-12 gap-8">
+                <div className="col-span-12 bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/30 shadow-editorial mb-4">
+                   <h4 className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-8 opacity-60">Revenue Performance (Last 7 Days)</h4>
+                   <div className="flex items-end justify-between h-48 gap-4">
+                      {revenueStats.revenueTrend.map((val, i) => {
+                        const max = Math.max(...revenueStats.revenueTrend, 1);
+                        const h = (val / max) * 100;
+                        return (
+                          <div key={i} title={`$${val.toLocaleString()}`} className="flex-1 bg-primary/10 rounded-t-md hover:bg-primary/30 transition-all cursor-help relative group" style={{ height: `${Math.max(h, 2)}%` }}>
+                             <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-secondary text-on-secondary text-[9px] font-bold px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-lg">${val.toLocaleString()}</div>
+                          </div>
+                        );
+                      })}
+                   </div>
+                </div>
                 <div className="col-span-12 lg:col-span-4 bg-primary rounded-2xl p-10 text-on-primary shadow-2xl flex flex-col justify-between">
                    <div>
                      <p className="text-[10px] font-bold text-secondary-fixed uppercase tracking-widest mb-10">Revenue Yield</p>
