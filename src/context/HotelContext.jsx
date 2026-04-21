@@ -350,6 +350,7 @@ export const HotelProvider = ({ children }) => {
         description: item.description,
         price: item.price,
         image_url: item.image,
+        status: item.status || 'Clean',
         is_popular: item.popular,
         is_top_tier: item.topTier,
         features: item.amenities || [],
@@ -371,6 +372,50 @@ export const HotelProvider = ({ children }) => {
       if (error) {
         console.error(`Error adding to ${table}:`, error.message);
         alert(`Failed to add item to ${category}: ${error.message}`);
+      } else {
+        fetchCatalog();
+      }
+    }
+  };
+
+  const updateCatalogItem = async (category, id, item) => {
+    let table = '';
+    let data = {};
+    if (category === 'Rooms') {
+      table = 'rooms';
+      data = {
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        image_url: item.image,
+        status: item.status,
+        is_popular: item.popular,
+        is_top_tier: item.topTier,
+        features: item.amenities || [],
+        gallery: item.gallery || []
+      };
+    }
+
+    if (table) {
+      const { error } = await supabase.from(table).update(data).eq('id', id);
+      if (error) {
+        console.error(`Error updating ${table}:`, error.message);
+        alert(`Failed to update room: ${error.message}`);
+      } else {
+        fetchCatalog();
+      }
+    }
+  };
+
+  const deleteCatalogItem = async (category, id) => {
+    let table = '';
+    if (category === 'Rooms') table = 'rooms';
+
+    if (table) {
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) {
+        console.error(`Error deleting from ${table}:`, error.message);
+        alert(`Failed to delete room: ${error.message}`);
       } else {
         fetchCatalog();
       }
@@ -444,6 +489,8 @@ export const HotelProvider = ({ children }) => {
       denyStaffRequest,
       addStaffRequest,
       addCatalogItem,
+      updateCatalogItem,
+      deleteCatalogItem,
       guestCharges,
       inventoryUsage,
       inventoryItems,
