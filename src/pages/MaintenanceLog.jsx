@@ -22,7 +22,7 @@ const MaintenanceLog = () => {
       category: formData.category,
       assignedTo: 'Unassigned'
     });
-    navigate('/staff/tasks');
+    navigate('/admin/maintenance');
   };
 
   return (

@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminMaintenance = () => {
+  const navigate = useNavigate();
   const { tasks, loading } = useContext(HotelContext);
   const maintenanceTasks = tasks.filter(t => t.category === 'Maintenance' || t.category === 'Engineering');
 
@@ -19,7 +21,10 @@ const AdminMaintenance = () => {
             <h1 className="font-headline text-4xl text-primary mb-2">Facility Maintenance</h1>
             <p className="text-on-surface-variant font-body tracking-wide opacity-80 uppercase text-[10px] font-bold">Engineering and infrastructure upkeep logs.</p>
           </div>
-          <button className="bg-primary text-on-primary px-6 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 hover:brightness-110 transition-all">
+          <button
+            onClick={() => navigate('/admin/maintenance-log')}
+            className="bg-primary text-on-primary px-6 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 hover:brightness-110 transition-all"
+          >
             Log New Issue
           </button>
         </header>
