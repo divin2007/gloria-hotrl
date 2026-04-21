@@ -120,14 +120,35 @@ const AdminReports = () => {
   }, [guestCharges, isManager]);
 
   const exportCSV = (data, filename) => {
-    const csvContent = "data:text/csv;charset=utf-8," +
-      (Array.isArray(data) ? data.map(e => Object.values(e).join(",")).join("\n") : JSON.stringify(data));
+    let rows = [];
+    if (Array.isArray(data)) {
+      if (data.length > 0) {
+        const headers = Object.keys(data[0]);
+        rows.push(headers.join(","));
+        data.forEach(item => {
+          rows.push(headers.map(header => {
+            const val = item[header];
+            return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
+          }).join(","));
+        });
+      }
+    } else {
+      const headers = Object.keys(data);
+      rows.push(headers.join(","));
+      rows.push(headers.map(header => {
+        const val = data[header];
+        return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
+      }).join(","));
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8," + rows.join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", `${filename}.csv`);
     document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return (

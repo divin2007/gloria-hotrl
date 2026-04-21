@@ -74,48 +74,39 @@ export const HotelProvider = ({ children }) => {
     fetchCatalog();
     if (user) {
       fetchOperationalData();
-      subscribeToNotifications();
     }
   }, [user]);
 
-  const subscribeToNotifications = () => {
-    if (!user) return;
+  useEffect(() => {
+    if (!user || !profile) return;
 
-    // Initial fetch of unread notifications
+    // 1. Initial fetch of notifications
+    const filter = profile?.role ? `user_id.eq.${user.id},role.eq.${profile.role}` : `user_id.eq.${user.id}`;
     supabase
       .from('notifications')
       .select('*')
-      .or(`user_id.eq.${user.id},role.eq.${profile?.role}`)
+      .or(filter)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         if (data) setNotifications(data);
       });
 
-    // Real-time subscription
+    // 2. Real-time subscription
     const channel = supabase
-      .channel('realtime_notifications')
+      .channel(`user-notifications-${user.id}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
+          table: 'notifications'
         },
         (payload) => {
-          setNotifications(prev => [payload.new, ...prev]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `role=eq.${profile?.role}`
-        },
-        (payload) => {
-          setNotifications(prev => [payload.new, ...prev]);
+          // Client-side filtering to avoid complex filter string issues in Realtime
+          const isForMe = payload.new.user_id === user.id || payload.new.role === profile?.role;
+          if (isForMe) {
+            setNotifications(prev => [payload.new, ...prev]);
+          }
         }
       )
       .subscribe();
@@ -123,7 +114,7 @@ export const HotelProvider = ({ children }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [user, profile?.role]);
 
   const fetchProfile = async (userId, retryCount = 0) => {
     try {
@@ -562,8 +553,10 @@ export const HotelProvider = ({ children }) => {
 
     if (table) {
       // Ensure only managers can update
-      if (profile?.role !== 'manager' && profile?.role !== 'admin') {
-         alert("Unauthorized: Only managers can update catalog items.");
+      const isManager = profile?.role === 'manager' || profile?.role === 'admin';
+      if (!isManager) {
+         alert("Unauthorized: Only authorized managers can update physical hotel assets.");
+         console.error("Security violation: Unauthorized room update attempt by", profile?.email);
          return;
       }
 
