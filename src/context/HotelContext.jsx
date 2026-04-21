@@ -138,6 +138,8 @@ export const HotelProvider = ({ children }) => {
       room: r.room_name,
       amount: r.total_amount,
       roomType: r.room_name,
+      checkIn: r.check_in,
+      checkOut: r.check_out,
       price: `$${r.total_amount?.toLocaleString()}`,
       dates: `${r.check_in} - ${r.check_out}`
     })));
@@ -179,6 +181,23 @@ export const HotelProvider = ({ children }) => {
       request: r.request_text
     })));
     if (revs.data) setRoomReviews(revs.data);
+
+    // Auto-settle reservations if check-in date is today or past
+    const todayStr = new Date().toISOString().split('T')[0];
+    const pendingToSettle = res.data?.filter(r => r.status === 'Pending' && r.check_in <= todayStr);
+
+    if (pendingToSettle && pendingToSettle.length > 0) {
+      const ids = pendingToSettle.map(r => r.id);
+      // We use a separate async call to not block the main fetch cycle
+      supabase.from('reservations').update({ status: 'Settled' }).in('id', ids)
+        .then(({ error }) => {
+           if (!error) {
+             // Silently refresh the local state to match the DB
+             setReservations(prev => prev.map(r => ids.includes(r.id) ? { ...r, status: 'Settled' } : r));
+           }
+        });
+    }
+
     setLoading(false);
   };
 
