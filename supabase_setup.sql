@@ -1,5 +1,5 @@
 -- ==========================================
--- SUPABASE COMPLETE MASTER SETUP (V10 - ABSOLUTE SYNC)
+-- SUPABASE COMPLETE MASTER SETUP (V12 - HARDENED SECURITY)
 -- ==========================================
 
 -- 1. Setup Custom Type
@@ -10,7 +10,7 @@ BEGIN
     END IF;
 END $$;
 
--- 2. Core Operational Tables (Ensuring exact columns)
+-- 2. Core Operational Tables
 
 -- Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -151,55 +151,73 @@ CREATE TABLE IF NOT EXISTS public.event_venues (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Open All Permissions & RLS
--- 3. Open All Permissions & RLS (Idempotent)
+-- 3. HARDENED SECURITY & RLS POLICIES
+
+-- Enable RLS on all tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Profiles ALL" ON public.profiles;
-CREATE POLICY "Profiles ALL" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.rooms ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Rooms ALL" ON public.rooms;
-CREATE POLICY "Rooms ALL" ON public.rooms FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.reservations ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Res ALL" ON public.reservations;
-CREATE POLICY "Res ALL" ON public.reservations FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.dining_reservations ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "DiningRes ALL" ON public.dining_reservations;
-CREATE POLICY "DiningRes ALL" ON public.dining_reservations FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.event_inquiries ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Event ALL" ON public.event_inquiries;
-CREATE POLICY "Event ALL" ON public.event_inquiries FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Tasks ALL" ON public.tasks;
-CREATE POLICY "Tasks ALL" ON public.tasks FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.staff_requests ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "StaffReq ALL" ON public.staff_requests;
-CREATE POLICY "StaffReq ALL" ON public.staff_requests FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.room_reviews ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Reviews ALL" ON public.room_reviews;
-CREATE POLICY "Reviews ALL" ON public.room_reviews FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.staff_invites ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Invites ALL" ON public.staff_invites;
-CREATE POLICY "Invites ALL" ON public.staff_invites FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.dining_venues ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "DiningVenues ALL" ON public.dining_venues;
-CREATE POLICY "DiningVenues ALL" ON public.dining_venues FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "MenuItems ALL" ON public.menu_items;
-CREATE POLICY "MenuItems ALL" ON public.menu_items FOR ALL USING (true) WITH CHECK (true);
-
 ALTER TABLE public.event_venues ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "EventVenues ALL" ON public.event_venues;
-CREATE POLICY "EventVenues ALL" ON public.event_venues FOR ALL USING (true) WITH CHECK (true);
+
+-- Helper Function to check if user is staff/admin
+CREATE OR REPLACE FUNCTION public.is_staff()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+    AND role IN ('staff', 'receptionist', 'manager', 'admin')
+  );
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Profiles Policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
+CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+-- Rooms Policies
+DROP POLICY IF EXISTS "Rooms are viewable by everyone" ON public.rooms;
+CREATE POLICY "Rooms are viewable by everyone" ON public.rooms FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Only staff can modify rooms" ON public.rooms;
+CREATE POLICY "Only staff can modify rooms" ON public.rooms FOR ALL USING (public.is_staff());
+
+-- Reservations Policies
+DROP POLICY IF EXISTS "Users can view own reservations" ON public.reservations;
+CREATE POLICY "Users can view own reservations" ON public.reservations FOR SELECT USING (auth.uid() = user_id OR public.is_staff());
+DROP POLICY IF EXISTS "Anyone can create a reservation" ON public.reservations;
+CREATE POLICY "Anyone can create a reservation" ON public.reservations FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Only staff can update reservations" ON public.reservations;
+CREATE POLICY "Only staff can update reservations" ON public.reservations FOR UPDATE USING (public.is_staff() OR auth.uid() = user_id);
+
+-- Tasks Policies
+DROP POLICY IF EXISTS "Staff can view and manage tasks" ON public.tasks;
+CREATE POLICY "Staff can view and manage tasks" ON public.tasks FOR ALL USING (public.is_staff());
+
+-- Staff Requests Policies
+DROP POLICY IF EXISTS "Staff can view and manage their requests" ON public.staff_requests;
+CREATE POLICY "Staff can view and manage their requests" ON public.staff_requests FOR ALL USING (public.is_staff());
+
+-- Room Reviews Policies
+DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON public.room_reviews;
+CREATE POLICY "Reviews are viewable by everyone" ON public.room_reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Authenticated users can post reviews" ON public.room_reviews;
+CREATE POLICY "Authenticated users can post reviews" ON public.room_reviews FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- Other Catalog tables (Dining, Events, Menu)
+DROP POLICY IF EXISTS "Catalog is viewable by everyone" ON public.dining_venues;
+CREATE POLICY "Catalog is viewable by everyone" ON public.dining_venues FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Catalog is viewable by everyone" ON public.menu_items;
+CREATE POLICY "Catalog is viewable by everyone" ON public.menu_items FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Catalog is viewable by everyone" ON public.event_venues;
+CREATE POLICY "Catalog is viewable by everyone" ON public.event_venues FOR SELECT USING (true);
 
 -- 4. Grant API access
 GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
@@ -213,9 +231,19 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  assigned_role public.user_role;
 BEGIN
+  -- Check if the email is invited to a specific role
+  SELECT role INTO assigned_role FROM public.staff_invites WHERE email = new.email;
+
+  -- Fallback to guest if not invited
+  IF assigned_role IS NULL THEN
+    assigned_role := 'guest'::public.user_role;
+  END IF;
+
   INSERT INTO public.profiles (id, email, full_name, role)
-  VALUES (new.id, new.email, COALESCE(new.raw_user_meta_data->>'full_name', 'Guest'), 'guest'::public.user_role);
+  VALUES (new.id, new.email, COALESCE(new.raw_user_meta_data->>'full_name', 'Guest'), assigned_role);
   RETURN NEW;
 EXCEPTION WHEN OTHERS THEN RETURN NEW;
 END;

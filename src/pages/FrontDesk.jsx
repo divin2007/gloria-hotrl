@@ -1,19 +1,23 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useHotel } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 import { SkeletonTable } from '../components/LoadingSkeleton';
 
 const FrontDesk = () => {
-  const { reservations, diningReservations, updateReservationStatus, loading, catalogRooms } = useHotel();
-
-  const pendingRooms = reservations.filter(res => res.status === 'Pending');
-  const pendingDining = diningReservations.filter(res => res.status === 'Pending');
-
-  const allPending = [...pendingRooms, ...pendingDining].sort((a, b) => a.id - b.id);
+  const { reservations, diningReservations, updateReservationStatus, loading, catalogRooms, profile } = useHotel();
 
   const today = new Date().toISOString().split('T')[0];
+
+  const pendingRooms = reservations.filter(res => res.status === 'Pending' && res.check_in > today);
+  const pendingDining = diningReservations.filter(res => res.status === 'Pending');
+
+  const allPending = [...pendingRooms, ...pendingDining].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
   const checkInsToday = reservations.filter(r => r.check_in === today).length;
   const checkOutsToday = reservations.filter(r => r.check_out === today).length;
+
+  const arrivalsToday = reservations.filter(r => r.check_in === today);
 
   const dailySchedule = reservations
     .filter(r => r.check_in === today || r.check_out === today)
@@ -21,9 +25,11 @@ const FrontDesk = () => {
       name: r.guest,
       detail: `${r.room} • ${r.check_in === today ? 'Check-in' : 'Check-out'}`,
       time: r.check_in === today ? '02:00 PM' : '11:00 AM',
-      vip: r.room?.toLowerCase().includes('suite') || r.room?.toLowerCase().includes('penthouse')
+      vip: r.room?.toLowerCase().includes('suite') || r.room?.toLowerCase().includes('penthouse'),
+      status: r.status
     }))
-    .slice(0, 5);
+    .sort((a, b) => a.time.localeCompare(b.time))
+    .slice(0, 10);
 
   const roomsReady = 100 - (reservations.filter(r => {
     const now = new Date();
@@ -37,12 +43,14 @@ const FrontDesk = () => {
         <header className="flex justify-between items-end mb-12">
           <div>
             <h2 className="font-headline text-4xl text-primary mb-2">Front Desk Operations</h2>
-            <p className="font-body text-on-surface-variant tracking-wide uppercase text-[10px] font-bold opacity-80">Monday, October 14, 2024 • Kigali, Rwanda</p>
+            <p className="font-body text-on-surface-variant tracking-wide uppercase text-[10px] font-bold opacity-80">
+              {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} • Kigali, Rwanda
+            </p>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-primary font-bold text-sm">Jean-Luc Habimana</p>
-              <p className="text-on-surface-variant text-[10px] font-bold uppercase opacity-60">Duty Manager</p>
+              <p className="text-primary font-bold text-sm">{profile?.full_name || 'Staff'}</p>
+              <p className="text-on-surface-variant text-[10px] font-bold uppercase opacity-60">Duty {profile?.role || 'Manager'}</p>
             </div>
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary/20 bg-surface-container-high flex items-center justify-center text-secondary">
               <span className="material-symbols-outlined">person</span>
@@ -51,51 +59,116 @@ const FrontDesk = () => {
         </header>
 
         <div className="grid grid-cols-12 gap-6">
-          {/* Pending Reservations Column */}
-          <section className="col-span-12 lg:col-span-7 space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="font-headline text-xl text-primary">Pending Approval</h3>
-              <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                {allPending.length} Requests
-              </span>
-            </div>
-
-            {loading ? <SkeletonTable rows={3} /> : allPending.map((res) => (
-              <div key={`${res.type || 'Room'}-${res.id}`} className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 flex items-start gap-6 shadow-editorial transition-all hover:bg-surface-container-low/20">
-                <div className="w-24 h-24 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden text-secondary">
-                   {res.type === 'Dining' ? (
-                     <span className="material-symbols-outlined text-4xl">restaurant</span>
-                   ) : (
-                     <span className="material-symbols-outlined text-4xl">bed</span>
-                   )}
+          {/* Main Operations Column */}
+          <section className="col-span-12 lg:col-span-7 space-y-10">
+            {/* Today's Arrivals Section */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-secondary">flight_land</span>
+                  <h3 className="font-headline text-2xl text-primary">Today's Arrivals</h3>
                 </div>
-                <div className="flex-grow">
-                  <div className="flex justify-between mb-1">
-                    <h4 className="font-headline text-lg text-primary">{res.guest}</h4>
-                    <span className="text-secondary font-bold text-sm">
-                      {res.amount ? `$${res.amount.toLocaleString()}` : res.guests ? `${res.guests} Guests` : ''}
+                <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                  {arrivalsToday.length} Expected
+                </span>
+              </div>
+
+              {loading ? <SkeletonTable rows={2} /> : arrivalsToday.length === 0 ? (
+                <div className="p-12 text-center bg-surface-container-lowest rounded-2xl border border-dashed border-outline-variant/50">
+                  <p className="text-on-surface-variant font-body italic text-sm">No arrivals scheduled for today.</p>
+                </div>
+              ) : arrivalsToday.map((res) => (
+                <div key={res.id} className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/30 flex items-start gap-6 shadow-editorial transition-all hover:border-secondary/30 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-3">
+                    <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded ${res.status === 'Settled' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                      {res.status === 'Settled' ? 'Confirmed' : res.status}
                     </span>
                   </div>
-                  <p className="text-on-surface-variant text-sm font-medium mb-4">
-                    {res.room || res.venue} • {res.checkIn ? `${res.checkIn} - ${res.checkOut}` : res.time ? `Tonight, ${res.time}` : 'TBD'}
-                  </p>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => updateReservationStatus(res.id, 'Settled')}
-                      className="bg-secondary px-6 py-2 rounded text-on-secondary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => updateReservationStatus(res.id, 'Declined')}
-                      className="bg-transparent border border-outline/30 px-6 py-2 rounded text-on-surface-variant text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container-low transition-all"
-                    >
-                      Decline
-                    </button>
+                  <div className="w-20 h-20 rounded-lg bg-secondary/5 flex items-center justify-center shrink-0 text-secondary">
+                     <span className="material-symbols-outlined text-3xl">king_bed</span>
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex justify-between mb-1">
+                      <h4 className="font-headline text-xl text-primary">{res.guest}</h4>
+                      <span className="text-primary font-bold">${res.amount?.toLocaleString()}</span>
+                    </div>
+                    <p className="text-on-surface-variant text-sm font-medium mb-4 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-xs">meeting_room</span>
+                      {res.room}
+                    </p>
+                    <div className="flex gap-2">
+                      {res.status !== 'Settled' && (
+                        <button
+                          onClick={() => updateReservationStatus(res.id, 'Settled')}
+                          className="bg-primary text-on-primary px-5 py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90"
+                        >
+                          Check In Now
+                        </button>
+                      )}
+                      <Link to={`/admin/reservations`} className="border border-outline/20 px-5 py-2 rounded text-on-surface-variant text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container-low transition-all">
+                        View Details
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Pending Requests Section */}
+            <div className="space-y-6 pt-4">
+              <div className="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-secondary">pending_actions</span>
+                  <h3 className="font-headline text-2xl text-primary">Pending Approval</h3>
+                </div>
+                <span className="bg-outline-variant/20 text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                  {allPending.length} New Requests
+                </span>
               </div>
-            ))}
+
+            <div className="space-y-4">
+              {loading ? <SkeletonTable rows={3} /> : allPending.length === 0 ? (
+                 <div className="p-8 text-center bg-surface-container-lowest/50 rounded-xl border border-outline-variant/20">
+                   <p className="text-on-surface-variant font-body text-xs italic">No pending requests at this time.</p>
+                 </div>
+              ) : allPending.map((res) => (
+                <div key={`${res.type || 'Room'}-${res.id}`} className="bg-surface-container-lowest/70 rounded-xl p-5 border border-outline-variant/20 flex items-start gap-5 shadow-sm transition-all hover:bg-surface-container-low/20">
+                  <div className="w-24 h-24 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden text-secondary">
+                     {res.type === 'Dining' ? (
+                       <span className="material-symbols-outlined text-4xl">restaurant</span>
+                     ) : (
+                       <span className="material-symbols-outlined text-4xl">bed</span>
+                     )}
+                  </div>
+                  <div className="flex-grow">
+                    <div className="flex justify-between mb-1">
+                      <h4 className="font-headline text-lg text-primary">{res.guest}</h4>
+                      <span className="text-secondary font-bold text-sm">
+                        {res.amount ? `$${res.amount.toLocaleString()}` : res.guests ? `${res.guests} Guests` : ''}
+                      </span>
+                    </div>
+                    <p className="text-on-surface-variant text-sm font-medium mb-4">
+                      {res.room || res.venue} • {res.checkIn ? `${res.checkIn} - ${res.checkOut}` : res.time ? `Tonight, ${res.time}` : 'TBD'}
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => updateReservationStatus(res.id, 'Settled')}
+                        className="bg-secondary px-6 py-2 rounded text-on-secondary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 transition-all"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => updateReservationStatus(res.id, 'Declined')}
+                        className="bg-transparent border border-outline/30 px-6 py-2 rounded text-on-surface-variant text-[10px] font-bold uppercase tracking-widest hover:bg-surface-container-low transition-all"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </div>
           </section>
 
           {/* Daily Flow Column */}
@@ -136,7 +209,7 @@ const FrontDesk = () => {
                 ))}
               </div>
               <div className="p-4 bg-surface-container-low/20 text-center">
-                <button className="text-secondary font-bold text-[10px] uppercase tracking-widest hover:underline">View Full Manifest</button>
+                <Link to="/admin/reservations" className="text-secondary font-bold text-[10px] uppercase tracking-widest hover:underline">View Full Manifest</Link>
               </div>
             </div>
 
