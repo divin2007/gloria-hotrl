@@ -6,7 +6,6 @@ import Footer from './components/Footer';
 import AuthGuard from './components/AuthGuard';
 import Home from './pages/Home';
 import Rooms from './pages/Rooms';
-import RoomDetails from './pages/RoomDetails';
 import Dining from './pages/Dining';
 import Events from './pages/Events';
 import About from './pages/About';
@@ -16,6 +15,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Contact from './pages/Contact';
 import Press from './pages/Press';
+import Gallery from './pages/Gallery';
 import AdminDashboard from './pages/AdminDashboard';
 import FrontDesk from './pages/FrontDesk';
 import StaffTasks from './pages/StaffTasks';
@@ -24,7 +24,6 @@ import AdminHousekeeping from './pages/AdminHousekeeping';
 import AdminMaintenance from './pages/AdminMaintenance';
 import AdminReports from './pages/AdminReports';
 import AdminSettings from './pages/AdminSettings';
-import AdminInventory from './pages/AdminInventory';
 import ManagerDashboard from './pages/ManagerDashboard';
 import ReceptionistDashboard from './pages/ReceptionistDashboard';
 import StaffDashboard from './pages/StaffDashboard';
@@ -72,10 +71,10 @@ function App() {
             {/* Guest Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/rooms" element={<Rooms />} />
-            <Route path="/rooms/:id" element={<RoomDetails />} />
             <Route path="/dining" element={<Dining />} />
             <Route path="/events" element={<Events />} />
             <Route path="/about" element={<About />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/login" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
@@ -95,7 +94,6 @@ function App() {
             <Route path="/admin/maintenance" element={<AuthGuard requiredRole="admin"><AdminMaintenance /></AuthGuard>} />
             <Route path="/admin/reports" element={<AuthGuard requiredRole="admin"><AdminReports /></AuthGuard>} />
             <Route path="/admin/settings" element={<AuthGuard requiredRole="admin"><AdminSettings /></AuthGuard>} />
-            <Route path="/admin/inventory" element={<AuthGuard requiredRole="manager"><AdminInventory /></AuthGuard>} />
             <Route path="/admin/new-booking" element={<AuthGuard requiredRole="admin"><NewBooking /></AuthGuard>} />
             <Route path="/admin/maintenance-log" element={<AuthGuard requiredRole="admin"><MaintenanceLog /></AuthGuard>} />
 

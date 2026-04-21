@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useHotel } from '../context/HotelContext';
 import SEO from '../components/SEO';
 
@@ -8,25 +7,15 @@ const Rooms = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleBook = (roomName, price) => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayAfter = new Date();
-    dayAfter.setDate(dayAfter.getDate() + 4);
-
     addReservation({
       guest: "Guest from Web",
       room: roomName,
       amount: price,
-      checkIn: tomorrow.toISOString().split('T')[0],
-      checkOut: dayAfter.toISOString().split('T')[0]
-    }).then(({ error }) => {
-      if (error) {
-        setSuccessMessage(`Error: ${error.message}`);
-      } else {
-        setSuccessMessage(`Booking for ${roomName} requested!`);
-      }
-      setTimeout(() => setSuccessMessage(""), 4000);
+      checkIn: "Oct 25",
+      checkOut: "Oct 28"
     });
+    setSuccessMessage(`Booking request for ${roomName} sent!`);
+    setTimeout(() => setSuccessMessage(""), 4000);
   };
 
   return (
@@ -55,66 +44,56 @@ const Rooms = () => {
 
       {/* Room Listing */}
       <section className="py-24 px-8 max-w-screen-2xl mx-auto">
-        <div className="flex flex-col gap-32">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           {catalogRooms.map((room, index) => {
-              const isEven = index % 2 === 0;
+              const isLarge = index % 3 === 0;
               return (
-                  <div key={room.id} className={`grid grid-cols-1 lg:grid-cols-12 gap-16 items-center group`}>
-                      <div className={`lg:col-span-7 ${isEven ? 'lg:order-1' : 'lg:order-2'} relative`}>
-                          <div className="aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl transition-all duration-700 group-hover:shadow-primary/5 border border-outline-variant/10">
-                            <img alt={room.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src={room.image || room.image_url} />
-                            {(room.popular || room.is_popular) && (
-                                <div className="absolute top-8 left-8 bg-primary/90 backdrop-blur-md text-on-primary px-6 py-2 text-[10px] font-bold tracking-[0.2em] uppercase rounded shadow-xl">Guest Favorite</div>
-                            )}
-                            {(room.topTier || room.is_top_tier) && (
-                                <div className="absolute top-8 left-8 bg-secondary/90 backdrop-blur-md text-on-secondary px-6 py-2 text-[10px] font-bold tracking-[0.2em] uppercase rounded shadow-xl">Signature Sanctuary</div>
-                            )}
-                          </div>
-                          <div className={`absolute -bottom-10 ${isEven ? '-right-10' : '-left-10'} hidden xl:flex w-40 h-40 bg-background border border-outline-variant/30 rounded-full items-center justify-center p-4 shadow-xl z-20 group-hover:scale-110 transition-transform`}>
-                              <div className="text-center">
-                                <p className="text-[8px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Nightly</p>
-                                <p className="text-2xl font-serif text-primary">${room.price}</p>
+                  <div key={room.id} className={`${isLarge ? 'md:col-span-8' : 'md:col-span-4'} group`}>
+                      <div className="bg-surface-container-lowest rounded-2xl h-full overflow-hidden shadow-editorial transition-all duration-500 hover:-translate-y-2 border border-outline-variant/10">
+                          <div className={`grid grid-cols-1 ${isLarge ? 'md:grid-cols-2' : ''} h-full`}>
+                              <div className="relative h-80 md:h-auto overflow-hidden">
+                                  <img alt={room.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src={room.image || room.image_url} />
+                                  {(room.popular || room.is_popular) && (
+                                      <div className="absolute top-4 left-4 bg-primary text-on-primary px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded">Popular Choice</div>
+                                  )}
+                                  {(room.topTier || room.is_top_tier) && (
+                                      <div className="absolute top-4 left-4 bg-secondary text-on-secondary px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded">Top Tier</div>
+                                  )}
                               </div>
-                          </div>
-                      </div>
+                              <div className={`p-10 flex flex-col justify-between ${!isLarge ? 'flex-grow' : ''}`}>
+                                  <div>
+                                      <h2 className={`font-headline text-on-surface mb-3 ${isLarge ? 'text-3xl' : 'text-2xl'}`}>{room.name}</h2>
+                                      <p className="text-on-surface-variant font-body mb-8 leading-relaxed text-sm">{room.description}</p>
 
-                      <div className={`lg:col-span-5 ${isEven ? 'lg:order-2' : 'lg:order-1'} space-y-8`}>
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                              <div className="h-px w-8 bg-secondary opacity-50"></div>
-                              <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.3em]">Accommodation</span>
-                            </div>
-                            <h2 className="font-headline text-5xl text-primary leading-tight">{room.name}</h2>
-                            <p className="text-on-surface-variant font-body text-lg leading-relaxed opacity-80">{room.description}</p>
-                          </div>
-
-                          <div className="flex flex-wrap gap-x-8 gap-y-4 py-8 border-y border-outline-variant/15">
-                              {(room.features || ['WiFi', 'Climate Control', 'Room Service']).slice(0, 4).map(amenity => (
-                                  <div key={amenity} className="flex items-center gap-3">
-                                      <span className="material-symbols-outlined text-secondary text-xl opacity-70">
-                                          {amenity.toLowerCase().includes('wifi') ? 'wifi' :
-                                           amenity.toLowerCase().includes('climate') || amenity.toLowerCase().includes('ac') ? 'ac_unit' :
-                                           amenity.toLowerCase().includes('service') || amenity.toLowerCase().includes('butler') ? 'room_service' :
-                                           'check_circle'}
-                                      </span>
-                                      <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{amenity}</span>
+                                      <div className="flex flex-wrap gap-6 mb-8">
+                                          {(room.amenities || ['WiFi', 'Climate Control']).map(amenity => (
+                                              <div key={amenity} className="flex items-center gap-2">
+                                                  <span className="material-symbols-outlined text-secondary text-xl">
+                                                      {amenity.toLowerCase().includes('wifi') ? 'wifi' :
+                                                       amenity.toLowerCase().includes('climate') || amenity.toLowerCase().includes('ac') ? 'ac_unit' :
+                                                       amenity.toLowerCase().includes('service') || amenity.toLowerCase().includes('butler') ? 'room_service' :
+                                                       amenity.toLowerCase().includes('bar') ? 'local_bar' :
+                                                       amenity.toLowerCase().includes('shuttle') || amenity.toLowerCase().includes('transport') ? 'airport_shuttle' :
+                                                       'check_circle'}
+                                                  </span>
+                                                  <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{amenity}</span>
+                                              </div>
+                                          ))}
+                                      </div>
                                   </div>
-                              ))}
-                          </div>
-
-                          <div className="flex items-center gap-6 pt-4">
-                              <Link
-                                to={`/rooms/${room.id}`}
-                                className="flex-1 bg-primary text-on-primary px-8 py-4 rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] text-center hover:brightness-110 transition-all shadow-xl hover:shadow-primary/20"
-                              >
-                                View Details
-                              </Link>
-                              <button
-                                  onClick={() => handleBook(room.name, room.price)}
-                                  className="flex-1 border border-outline text-on-surface-variant px-8 py-4 rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-surface-container-low transition-all"
-                              >
-                                Quick Book
-                              </button>
+                                  <div className="flex items-end justify-between border-t border-outline-variant/15 pt-8">
+                                      <div>
+                                          <span className="text-[10px] font-bold text-on-surface-variant tracking-widest block uppercase mb-1">Nightly from</span>
+                                          <span className="text-2xl font-headline text-primary">${room.price} <span className="text-sm font-body text-on-surface-variant font-normal">/ Night</span></span>
+                                      </div>
+                                      <button
+                                          onClick={() => handleBook(room.name, room.price)}
+                                          className="bg-secondary text-on-secondary px-8 py-3.5 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:brightness-110 transition-all shadow-lg"
+                                      >
+                                          Reserve
+                                      </button>
+                                  </div>
+                              </div>
                           </div>
                       </div>
                   </div>

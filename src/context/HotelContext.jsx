@@ -24,44 +24,19 @@ export const HotelProvider = ({ children }) => {
   const [catalogEvents, setCatalogEvents] = useState([]);
   const [catalogDining, setCatalogDining] = useState([]);
   const [catalogMenu, setCatalogMenu] = useState([]);
-  const [roomReviews, setRoomReviews] = useState([]);
-  const [guestCharges, setGuestCharges] = useState([]);
-  const [inventoryUsage, setInventoryUsage] = useState([]);
-  const [inventoryItems, setInventoryItems] = useState([]);
-  const [pricingLog, setPricingLog] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
-    // Detect errors from email links in the URL hash
-    const hash = window.location.hash;
-    if (hash.includes('error_description')) {
-      const params = new URLSearchParams(hash.substring(1));
-      let errorMsg = params.get('error_description')?.replace(/\+/g, ' ');
-
-      if (hash.includes('otp_expired')) {
-        errorMsg = "Email link is invalid or has expired. This often happens if the website address in Supabase doesn't match your current URL. Please check your Supabase URL Configuration.";
-      }
-
-      setAuthError(errorMsg);
-      // Clear hash to prevent repeated error messages
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-
     // Check active sessions and subscribe to auth changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user.id);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
-        if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
-          console.log("Session established via email confirmation link");
-        }
       } else {
         setProfile(null);
       }
@@ -77,45 +52,6 @@ export const HotelProvider = ({ children }) => {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (!user || !profile) return;
-
-    // 1. Initial fetch of notifications
-    const filter = profile?.role ? `user_id.eq.${user.id},role.eq.${profile.role}` : `user_id.eq.${user.id}`;
-    supabase
-      .from('notifications')
-      .select('*')
-      .or(filter)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        if (data) setNotifications(data);
-      });
-
-    // 2. Real-time subscription
-    const channel = supabase
-      .channel(`user-notifications-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications'
-        },
-        (payload) => {
-          // Client-side filtering to avoid complex filter string issues in Realtime
-          const isForMe = payload.new.user_id === user.id || payload.new.role === profile?.role;
-          if (isForMe) {
-            setNotifications(prev => [payload.new, ...prev]);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, profile?.role]);
-
   const fetchProfile = async (userId, retryCount = 0) => {
     try {
       const { data, error } = await supabase
@@ -126,9 +62,9 @@ export const HotelProvider = ({ children }) => {
 
       if (!error && data) {
         setProfile(data);
-      } else if (retryCount < 3) {
+      } else if (retryCount < 5) {
         // Profile might still be being created by the trigger
-        setTimeout(() => fetchProfile(userId, retryCount + 1), 1500);
+        setTimeout(() => fetchProfile(userId, retryCount + 1), 1000);
       } else {
         // Final attempt: Create profile if missing (fallback for trigger failure)
         const { data: authUser } = await supabase.auth.getUser();
@@ -165,18 +101,13 @@ export const HotelProvider = ({ children }) => {
 
   const fetchOperationalData = async () => {
     setLoading(true);
-    const [res, dres, einq, tsk, stf, sreq, revs, chgs, invu, invi, prcl] = await Promise.all([
+    const [res, dres, einq, tsk, stf, sreq] = await Promise.all([
       supabase.from('reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('dining_reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('event_inquiries').select('*').order('created_at', { ascending: false }),
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').in('role', ['staff', 'receptionist', 'manager', 'admin']),
-      supabase.from('staff_requests').select('*').order('created_at', { ascending: false }),
-      supabase.from('room_reviews').select('*').order('created_at', { ascending: false }),
-      supabase.from('guest_charges').select('*'),
-      supabase.from('inventory_usage').select('*'),
-      supabase.from('inventory_items').select('*'),
-      supabase.from('pricing_log').select('*')
+      supabase.from('staff_requests').select('*').order('created_at', { ascending: false })
     ]);
 
     if (res.data) setReservations(res.data.map(r => ({
@@ -186,8 +117,6 @@ export const HotelProvider = ({ children }) => {
       room: r.room_name,
       amount: r.total_amount,
       roomType: r.room_name,
-      checkIn: r.check_in,
-      checkOut: r.check_out,
       price: `$${r.total_amount?.toLocaleString()}`,
       dates: `${r.check_in} - ${r.check_out}`
     })));
@@ -228,46 +157,7 @@ export const HotelProvider = ({ children }) => {
       role: r.staff_role,
       request: r.request_text
     })));
-    if (revs.data) setRoomReviews(revs.data);
-    if (chgs.data) setGuestCharges(chgs.data);
-    if (invu.data) setInventoryUsage(invu.data);
-    if (invi.data) setInventoryItems(invi.data);
-    if (prcl.data) setPricingLog(prcl.data);
-
-    // Auto-settle reservations if check-in date is today or past
-    const todayStr = new Date().toISOString().split('T')[0];
-    const pendingToSettle = res.data?.filter(r => r.status === 'Pending' && r.check_in <= todayStr);
-
-    if (pendingToSettle && pendingToSettle.length > 0) {
-      const ids = pendingToSettle.map(r => r.id);
-      // We use a separate async call to not block the main fetch cycle
-      supabase.from('reservations').update({ status: 'Settled' }).in('id', ids)
-        .then(({ error }) => {
-           if (!error) {
-             // Silently refresh the local state to match the DB
-             setReservations(prev => prev.map(r => ids.includes(r.id) ? { ...r, status: 'Settled' } : r));
-           }
-        });
-    }
-
     setLoading(false);
-  };
-
-  const addNotification = async (notification) => {
-    // This function inserts into the DB, which triggers real-time for the target
-    const { data, error } = await supabase.from('notifications').insert([notification]).select();
-    return { data, error };
-  };
-
-  const markNotificationRead = async (id) => {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-  };
-
-  const markAllNotificationsRead = async () => {
-    if (!user) return;
-    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   };
 
   const addReservation = async (reservation) => {
@@ -280,15 +170,7 @@ export const HotelProvider = ({ children }) => {
         reservation_time: reservation.time,
         special_requests: reservation.specialRequests
       }]).select();
-      if (!error) {
-        fetchOperationalData();
-        addNotification({
-            role: 'receptionist',
-            title: 'New Dining Reservation',
-            message: `${reservation.guest} booked a table at ${reservation.room} for ${reservation.time}.`,
-            type: 'booking'
-        });
-      }
+      if (!error) fetchOperationalData();
       return { error };
     } else if (reservation.type === 'Event Inquiry') {
       const { data, error } = await supabase.from('event_inquiries').insert([{
@@ -300,76 +182,31 @@ export const HotelProvider = ({ children }) => {
       if (!error) fetchOperationalData();
       return { error };
     } else {
-      // 1. Date Availability Check
-      // Check if any reservation exists for this room where dates overlap
-      // Overlap formula: (start_a <= end_b) AND (end_a >= start_b)
-      const { data: existing, error: checkError } = await supabase
-        .from('reservations')
-        .select('id')
-        .eq('room_name', reservation.room)
-        .eq('status', 'Settled') // Only count confirmed bookings
-        .lte('check_in', reservation.checkOut)
-        .gte('check_out', reservation.checkIn);
-
-      if (checkError) return { error: checkError };
-      if (existing && existing.length > 0) {
-        return { error: { message: "This room is already occupied during the selected dates." } };
-      }
-
-      // 2. Insert if available
-      const bookingData = {
+      const { data, error } = await supabase.from('reservations').insert([{
         user_id: user?.id || null,
-        guest_name: reservation.guest || "Guest",
-        room_name: reservation.room || "Room",
-        total_amount: parseFloat(reservation.amount) || 0,
+        guest_name: reservation.guest,
+        room_name: reservation.room,
+        total_amount: reservation.amount,
         check_in: reservation.checkIn,
-        check_out: reservation.checkOut,
-        status: 'Pending'
-      };
-
-      const { data, error } = await supabase
-        .from('reservations')
-        .insert([bookingData])
-        .select();
-
-      if (error) {
-        console.error("Booking failed:", error);
-      } else {
-        fetchOperationalData();
-        addNotification({
-            role: 'receptionist',
-            title: 'New Room Booking',
-            message: `${bookingData.guest_name} reserved ${bookingData.room_name} from ${bookingData.check_in} to ${bookingData.check_out}.`,
-            type: 'booking'
-        });
-      }
+        check_out: reservation.checkOut
+      }]).select();
+      if (!error) fetchOperationalData();
       return { error };
     }
   };
 
   const updateReservationStatus = async (id, status) => {
     // Attempt update on all three tables since we don't know which one it is from the ID alone in this simplified logic
-    const results = await Promise.all([
-      supabase.from('reservations').update({ status }).eq('id', id).select(),
-      supabase.from('dining_reservations').update({ status }).eq('id', id).select(),
-      supabase.from('event_inquiries').update({ status }).eq('id', id).select()
+    await Promise.all([
+      supabase.from('reservations').update({ status }).eq('id', id),
+      supabase.from('dining_reservations').update({ status }).eq('id', id),
+      supabase.from('event_inquiries').update({ status }).eq('id', id)
     ]);
-
-    // Trigger notification for check-ins/outs
-    if (status === 'Settled') {
-       addNotification({
-          role: 'manager',
-          title: 'Guest Check-in',
-          message: `A guest has been checked into the system.`,
-          type: 'booking'
-       });
-    }
-
     fetchOperationalData();
   };
 
   const addTask = async (task) => {
-    const taskData = {
+    const { error } = await supabase.from('tasks').insert([{
       title: task.title,
       category: task.category,
       priority: task.priority,
@@ -379,100 +216,13 @@ export const HotelProvider = ({ children }) => {
       assigned_to_name: task.assignedTo,
       room_number: task.roomNumber,
       task_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    const { data, error } = await supabase.from('tasks').insert([taskData]).select();
-
-    if (!error) {
-        fetchOperationalData();
-        // Notify Staff if assigned
-        if (task.assignedTo && task.assignedTo !== 'Unassigned') {
-           const staffMember = staff.find(s => s.name === task.assignedTo);
-           if (staffMember) {
-              addNotification({
-                 user_id: staffMember.id,
-                 title: 'New Task Assigned',
-                 message: `${task.category} at ${task.roomNumber || 'General Area'}: ${task.title}. Priority: ${task.priority}.`,
-                 type: 'task'
-              });
-           }
-        }
-        // Notify Manager if task was logged (maintenance issue)
-        if (task.category === 'Maintenance' || task.category === 'Engineering') {
-           addNotification({
-              role: 'manager',
-              title: 'New Maintenance Issue Logged',
-              message: `A new ${task.category} issue was reported for ${task.roomNumber || 'Facility'}: ${task.title}`,
-              type: 'maintenance'
-           });
-        }
-    }
-  };
-
-  const updateTask = async (id, updates) => {
-    if (!id) return { error: { message: "Task ID is required for update" } };
-
-    const { data: oldTask, error: fetchError } = await supabase.from('tasks').select('*').eq('id', id).maybeSingle();
-    if (fetchError || !oldTask) {
-        console.error("Task not found for update:", id);
-        return { error: fetchError || { message: "Task not found" } };
-    }
-
-    // Map frontend keys back to DB keys if necessary
-    const dbUpdates = { ...updates };
-    if (updates.assignedTo) {
-        dbUpdates.assigned_to_name = updates.assignedTo;
-        delete dbUpdates.assignedTo;
-    }
-
-    const { data, error } = await supabase.from('tasks').update({
-      ...dbUpdates,
-      completed_at: updates.status === 'Completed' ? new Date().toISOString() : null
-    }).eq('id', id).select();
-
-    if (!error && data && data.length > 0) {
-      const task = data[0];
-      fetchOperationalData();
-
-      // Trigger notifications for changes
-      if (updates.assignedTo && updates.assignedTo !== oldTask.assigned_to_name) {
-         const staffMember = staff.find(s => s.name === updates.assignedTo);
-         if (staffMember) {
-            addNotification({
-               user_id: staffMember.id,
-               title: 'New Task Reassigned',
-               message: `You have been reassigned to: ${task.title} at ${task.room_number || 'Facility'}.`,
-               type: 'task'
-            });
-         }
-      }
-
-      if (updates.priority && updates.priority !== oldTask.priority) {
-         const staffMember = staff.find(s => s.name === task.assigned_to_name);
-         if (staffMember) {
-            addNotification({
-               user_id: staffMember.id,
-               title: 'Task Priority Changed',
-               message: `Task "${task.title}" is now marked as ${updates.priority}.`,
-               type: 'task'
-            });
-         }
-      }
-
-      if (updates.status === 'Completed') {
-        addNotification({
-            role: 'manager',
-            title: 'Task Completed',
-            message: `Staff member ${task.assigned_to_name} completed task: ${task.title} at ${task.room_number || 'Facility'}.`,
-            type: 'task'
-        });
-      }
-    }
-    return { data, error };
+    }]);
+    if (!error) fetchOperationalData();
   };
 
   const updateTaskStatus = async (id, status) => {
-    return updateTask(id, { status });
+    await supabase.from('tasks').update({ status }).eq('id', id);
+    fetchOperationalData();
   };
 
   const approveStaffRequest = async (id) => {
@@ -483,18 +233,6 @@ export const HotelProvider = ({ children }) => {
   const denyStaffRequest = async (id) => {
     await supabase.from('staff_requests').update({ status: "Denied" }).eq('id', id);
     fetchOperationalData();
-  };
-
-  const addRoomReview = async (review) => {
-    const { data, error } = await supabase.from('room_reviews').insert([{
-        room_id: review.roomId,
-        user_id: user?.id || null,
-        guest_name: profile?.full_name || review.guestName || "Guest",
-        rating: review.rating,
-        comment: review.comment
-    }]).select();
-    if (!error) fetchOperationalData();
-    return { data, error };
   };
 
   const addStaffRequest = async (requestData) => {
@@ -514,17 +252,7 @@ export const HotelProvider = ({ children }) => {
     let data = {};
     if (category === 'Rooms') {
       table = 'rooms';
-      data = {
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        image_url: item.image,
-        status: item.status || 'Clean',
-        is_popular: item.popular,
-        is_top_tier: item.topTier,
-        features: item.amenities || [],
-        gallery: item.gallery || []
-      };
+      data = { name: item.name, description: item.description, price: item.price, image_url: item.image, is_popular: item.popular, is_top_tier: item.topTier };
     } else if (category === 'Events') {
       table = 'event_venues';
       data = { name: item.name, description: item.description, capacity: item.capacity, image_url: item.image };
@@ -538,68 +266,8 @@ export const HotelProvider = ({ children }) => {
 
     if (table) {
       const { error } = await supabase.from(table).insert([data]);
-      if (error) {
-        console.error(`Error adding to ${table}:`, error.message);
-        alert(`Failed to add item to ${category}: ${error.message}`);
-      } else {
-        fetchCatalog();
-      }
-    }
-  };
-
-  const updateCatalogItem = async (category, id, item) => {
-    let table = '';
-    let data = {};
-    if (category === 'Rooms') {
-      table = 'rooms';
-      data = {
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        image_url: item.image,
-        status: item.status,
-        is_popular: item.popular,
-        is_top_tier: item.topTier,
-        features: item.amenities || [],
-        gallery: item.gallery || []
-      };
-    }
-
-    if (table) {
-      // Ensure only managers can update
-      const isManager = profile?.role === 'manager' || profile?.role === 'admin';
-      if (!isManager) {
-         alert("Unauthorized: Only authorized managers can update physical hotel assets.");
-         console.error("Security violation: Unauthorized room update attempt by", profile?.email);
-         return;
-      }
-
-      const { error } = await supabase.from(table).update(data).eq('id', id);
-      if (error) {
-        console.error(`Error updating ${table}:`, error.message);
-        if (error.message.includes('column "status" of relation "rooms" does not exist')) {
-            alert("Database Error: The 'status' column is missing. Please run the updated supabase_setup.sql script.");
-        } else {
-            alert(`Failed to update room: ${error.message}`);
-        }
-      } else {
-        fetchCatalog();
-      }
-    }
-  };
-
-  const deleteCatalogItem = async (category, id) => {
-    let table = '';
-    if (category === 'Rooms') table = 'rooms';
-
-    if (table) {
-      const { error } = await supabase.from(table).delete().eq('id', id);
-      if (error) {
-        console.error(`Error deleting from ${table}:`, error.message);
-        alert(`Failed to delete room: ${error.message}`);
-      } else {
-        fetchCatalog();
-      }
+      if (error) console.error(`Error adding to ${table}:`, error.message);
+      fetchCatalog();
     }
   };
 
@@ -617,8 +285,7 @@ export const HotelProvider = ({ children }) => {
       options: {
         data: {
           full_name: fullName
-        },
-        emailRedirectTo: window.location.origin
+        }
       }
     });
 
@@ -648,8 +315,6 @@ export const HotelProvider = ({ children }) => {
       signUp,
       inviteStaff,
       signOut,
-      authError,
-      setAuthError,
       reservations,
       diningReservations,
       eventInquiries,
@@ -660,8 +325,6 @@ export const HotelProvider = ({ children }) => {
       catalogEvents,
       catalogDining,
       catalogMenu,
-      roomReviews,
-      addRoomReview,
       addReservation,
       updateReservationStatus,
       addTask,
@@ -670,16 +333,6 @@ export const HotelProvider = ({ children }) => {
       denyStaffRequest,
       addStaffRequest,
       addCatalogItem,
-      updateCatalogItem,
-      deleteCatalogItem,
-      updateTask,
-      notifications,
-      markNotificationRead,
-      markAllNotificationsRead,
-      guestCharges,
-      inventoryUsage,
-      inventoryItems,
-      pricingLog,
       loading
     }}>
       {children}

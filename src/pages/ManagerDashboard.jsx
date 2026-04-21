@@ -92,7 +92,6 @@ const ManagerDashboard = () => {
   };
 
   const pendingRequests = staffRequests.filter(req => req.status === 'Pending');
-  const unassignedTasks = tasks.filter(t => t.assignedTo === 'Unassigned' && t.status !== 'Completed');
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -233,45 +232,6 @@ const ManagerDashboard = () => {
 
           {/* Workers Management & Tasks */}
           <section className="lg:col-span-2 space-y-8">
-            {/* Unassigned Tasks Section */}
-            {unassignedTasks.length > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden shadow-sm">
-                <div className="px-8 py-5 border-b border-amber-200 flex justify-between items-center bg-amber-100/50">
-                  <div className="flex items-center gap-2 text-amber-900">
-                    <span className="material-symbols-outlined text-xl">priority_high</span>
-                    <h3 className="font-headline text-lg">Unassigned Action Items</h3>
-                  </div>
-                  <span className="text-[10px] font-bold uppercase text-amber-800 bg-white px-2 py-1 rounded-full">{unassignedTasks.length} Issues</span>
-                </div>
-                <div className="divide-y divide-amber-200">
-                   {unassignedTasks.map(task => (
-                     <div key={task.id} className="p-6 flex items-center justify-between hover:bg-white/50 transition-colors">
-                        <div>
-                           <p className="text-sm font-bold text-amber-900">{task.title}</p>
-                           <p className="text-[10px] text-amber-800/60 uppercase font-bold tracking-widest">{task.category} • {task.roomNumber || 'General'}</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setNewTask({
-                              title: task.title,
-                              category: task.category,
-                              priority: task.priority,
-                              icon: task.category === 'Maintenance' ? 'handyman' : 'assignment',
-                              originalId: task.id // To handle update instead of new add if we had updateTask logic
-                            });
-                            // For simplicity, we just use the existing addTask flow which creates a duplicate or we could add an updateTaskStatus with assignment
-                            handleOpenTaskModal();
-                          }}
-                          className="bg-amber-600 text-white px-4 py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-amber-700"
-                        >
-                          Assign Worker
-                        </button>
-                     </div>
-                   ))}
-                </div>
-              </div>
-            )}
-
             <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-editorial">
               <div className="px-8 py-6 border-b border-outline-variant/15 flex justify-between items-center bg-surface-container-low/30">
                 <h3 className="font-serif text-lg text-primary">Workers Management</h3>
@@ -355,12 +315,11 @@ const ManagerDashboard = () => {
                         </div>
                     </div>
                 </div>
-                <Link to="/admin/inventory" className="bg-primary p-6 rounded-xl shadow-editorial text-on-primary flex flex-col justify-center items-center text-center space-y-3 hover:brightness-110 transition-all group">
-                    <span className="material-symbols-outlined text-4xl text-secondary group-hover:scale-110 transition-transform">hotel_class</span>
-                    <h4 className="font-headline text-lg text-white">Inventory Master</h4>
-                    <p className="text-xs opacity-70 text-on-primary/80">Full administrative control over hotel assets and room status.</p>
-                    <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 px-4 py-1.5 rounded-full mt-2">Open Sanctuary Catalog</span>
-                </Link>
+                <div className="bg-primary p-6 rounded-xl shadow-editorial text-on-primary flex flex-col justify-center items-center text-center space-y-3">
+                    <span className="material-symbols-outlined text-4xl text-secondary">hotel_class</span>
+                    <h4 className="font-headline text-lg">Inventory Portal</h4>
+                    <p className="text-xs opacity-70">Add and manage hotel offerings dynamically.</p>
+                </div>
             </div>
           </section>
         </div>
@@ -372,94 +331,86 @@ const ManagerDashboard = () => {
         onClose={() => setShowCatalogModal(false)}
         title={`Add New ${catalogType === 'Menu' ? 'Menu Item' : (catalogType === 'Dining' ? 'Dining Venue' : catalogType.slice(0, -1))}`}
       >
-        <form onSubmit={handleAddCatalogItem} className="space-y-5 p-2 max-h-[75vh] overflow-y-auto staff-scroll">
-            <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Item Name</label>
-                <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-medium" placeholder="e.g. Presidential Suite" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
+        <form onSubmit={handleAddCatalogItem} className="space-y-4 p-2 max-h-[70vh] overflow-y-auto staff-scroll">
+            <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Name</label>
+                <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Cover Image URL</label>
-                  <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="https://images.unsplash.com/..." value={newItem.image} onChange={e => setNewItem({...newItem, image: e.target.value})} />
-              </div>
-              {catalogType === 'Rooms' && (
-                <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Gallery Images (Optional)</label>
-                    <input className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="url1, url2, url3..." value={newItem.galleryInput || ''} onChange={e => setNewItem({...newItem, galleryInput: e.target.value, gallery: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} />
-                </div>
-              )}
+            <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Image URL</label>
+                <input className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="https://images.unsplash.com/..." value={newItem.image} onChange={e => setNewItem({...newItem, image: e.target.value})} />
             </div>
 
-            <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Official Description</label>
-                <textarea required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm min-h-[100px]" rows="3" placeholder="Describe the luxury and features for the guest..." value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} />
+            <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Description</label>
+                <textarea required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" rows="2" placeholder="Detailed description for guests" value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} />
             </div>
 
             {catalogType === 'Rooms' && (
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Price per Night ($)</label>
-                            <input required type="number" className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-bold text-primary" placeholder="180" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Price per Night ($)</label>
+                            <input required type="number" className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="180" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
                         </div>
-                        <div className="flex flex-col justify-center space-y-3 px-4">
+                        <div className="flex flex-col justify-center space-y-2">
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={newItem.popular} onChange={e => setNewItem({...newItem, popular: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary transition-all" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-primary transition-colors">Mark as Popular</span>
+                                <input type="checkbox" checked={newItem.popular} onChange={e => setNewItem({...newItem, popular: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Popular</span>
                             </label>
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={newItem.topTier} onChange={e => setNewItem({...newItem, topTier: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary transition-all" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-secondary transition-colors">Top Tier Asset</span>
+                                <input type="checkbox" checked={newItem.topTier} onChange={e => setNewItem({...newItem, topTier: e.target.checked})} className="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Top Tier</span>
                             </label>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Amenities (comma separated)</label>
-                        <input className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="WiFi, AC, Minibar, Balcony" value={newItem.amenityInput || ''} onChange={e => setNewItem({...newItem, amenityInput: e.target.value, amenities: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} />
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Amenities (comma separated)</label>
+                        <input className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="WiFi, AC, Minibar, Balcony" value={newItem.amenityInput || ''} onChange={e => setNewItem({...newItem, amenityInput: e.target.value, amenities: e.target.value.split(',').map(s => s.trim())})} />
                     </div>
                 </div>
             )}
 
             {catalogType === 'Events' && (
-                <div className="space-y-5">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Guest Capacity</label>
-                        <input required type="number" className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-bold" placeholder="500" value={newItem.capacity} onChange={e => setNewItem({...newItem, capacity: e.target.value})} />
+                <div className="space-y-4">
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Guest Capacity</label>
+                        <input required type="number" className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="500" value={newItem.capacity} onChange={e => setNewItem({...newItem, capacity: e.target.value})} />
                     </div>
                 </div>
             )}
 
             {catalogType === 'Dining' && (
-                <div className="space-y-5">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Operating Hours</label>
-                        <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl" placeholder="06:30 AM — 11:00 PM" value={newItem.hours} onChange={e => setNewItem({...newItem, hours: e.target.value})} />
+                <div className="space-y-4">
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Operating Hours</label>
+                        <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="06:30 AM — 11:00 PM" value={newItem.hours} onChange={e => setNewItem({...newItem, hours: e.target.value})} />
                     </div>
                 </div>
             )}
 
             {catalogType === 'Menu' && (
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Category</label>
-                            <select className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Category</label>
+                            <select className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
                                 <option value="Food">Food</option>
                                 <option value="Drink">Drink</option>
                                 <option value="Alcohol">Alcoholic Beverage</option>
                                 <option value="Special">Hotel Special</option>
                             </select>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Price Tag</label>
-                            <input required className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl font-bold" placeholder="12k RWF" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Price Tag</label>
+                            <input required className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="12k RWF" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} />
                         </div>
                     </div>
                     {newItem.category === 'Food' && (
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant opacity-70">Menu Subcategory</label>
-                            <input className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all px-4 py-3 rounded-xl text-sm" placeholder="e.g. Starters, Main Course, Confections" value={newItem.subcategory} onChange={e => setNewItem({...newItem, subcategory: e.target.value})} />
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase tracking-widest opacity-60">Menu Subcategory</label>
+                            <input className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:ring-0 focus:border-secondary transition-all px-4 py-3 rounded-t-lg" placeholder="e.g. Starters, Main Course, Confections" value={newItem.subcategory} onChange={e => setNewItem({...newItem, subcategory: e.target.value})} />
                         </div>
                     )}
                 </div>

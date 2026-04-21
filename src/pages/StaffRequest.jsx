@@ -34,20 +34,18 @@ const StaffRequest = () => {
           </header>
 
           {submitted ? (
-            <div className="bg-emerald-50 border border-emerald-200 p-16 rounded-3xl text-center shadow-2xl animate-in zoom-in duration-500">
-              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="material-symbols-outlined text-emerald-600 text-4xl animate-pulse">send_time_extension</span>
-              </div>
-              <h2 className="text-emerald-900 text-3xl font-serif mb-3">Request Transmitted</h2>
-              <p className="text-emerald-700 text-sm leading-relaxed max-w-sm mx-auto opacity-80">Your request has been securely encrypted and sent to the Management Portal. You will be notified via the operational briefing board.</p>
+            <div className="bg-emerald-50 border border-emerald-200 p-12 rounded-2xl text-center shadow-editorial animate-pulse">
+              <span className="material-symbols-outlined text-emerald-600 text-6xl mb-4">send_time_extension</span>
+              <h2 className="text-emerald-900 text-2xl font-serif mb-2">Request Transmitted</h2>
+              <p className="text-emerald-700 text-sm">Your request has been sent to the Management Portal. You will be notified via the operational briefing board.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="bg-surface-container-lowest rounded-3xl p-10 border border-outline-variant/20 shadow-2xl space-y-10">
-              <div className="space-y-8">
+            <form onSubmit={handleSubmit} className="bg-surface-container-lowest rounded-2xl p-10 border border-outline-variant/30 shadow-editorial space-y-8">
+              <div className="space-y-6">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] block opacity-60">Engagement Type</label>
+                  <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Request Type</label>
                   <select
-                    className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm transition-all font-medium"
+                    className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
                     value={formData.type}
                     onChange={(e) => setFormData({...formData, type: e.target.value})}
                   >
@@ -60,22 +58,22 @@ const StaffRequest = () => {
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] block opacity-60">Proposed Date</label>
+                    <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Target Date</label>
                     <input
                       required
                       type="date"
-                      className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm transition-all font-medium"
+                      className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
                       value={formData.date}
                       onChange={(e) => setFormData({...formData, date: e.target.value})}
                     />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] block opacity-60">Estimated Span</label>
+                    <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Duration / Hours</label>
                     <input
                       required
                       type="text"
                       placeholder="e.g. 4 hours"
-                      className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm transition-all font-medium"
+                      className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
                       value={formData.duration}
                       onChange={(e) => setFormData({...formData, duration: e.target.value})}
                     />
@@ -83,12 +81,12 @@ const StaffRequest = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] block opacity-60">Professional Justification</label>
+                  <label className="text-[10px] font-bold text-secondary uppercase tracking-widest block">Reasoning / Justification</label>
                   <textarea
                     required
-                    rows="5"
-                    placeholder="Provide professional details for management review..."
-                    className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-xl px-5 py-4 text-on-surface text-sm transition-all font-medium leading-relaxed"
+                    rows="4"
+                    placeholder="Provide details for management review..."
+                    className="w-full bg-surface-container-low border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 text-on-surface text-sm transition-all"
                     value={formData.reason}
                     onChange={(e) => setFormData({...formData, reason: e.target.value})}
                   ></textarea>
@@ -97,9 +95,9 @@ const StaffRequest = () => {
 
               <button
                 type="submit"
-                className="w-full bg-secondary text-on-secondary py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl hover:shadow-secondary/20"
+                className="w-full bg-secondary text-on-secondary py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:brightness-110 transition-all shadow-lg"
               >
-                Submit Professional Request
+                Submit for Approval
               </button>
             </form>
           )}

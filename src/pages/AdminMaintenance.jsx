@@ -1,16 +1,10 @@
 import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminMaintenance = () => {
-  const navigate = useNavigate();
   const { tasks, loading } = useContext(HotelContext);
-  const maintenanceTasks = tasks.filter(t => t.category === 'Maintenance' || t.category === 'Engineering');
-
-  const critical = maintenanceTasks.filter(t => t.priority === 'Emergency' || t.priority === 'High Priority').length;
-  const active = maintenanceTasks.filter(t => t.status !== 'Completed').length;
-  const preventative = maintenanceTasks.filter(t => t.priority === 'Low Priority').length;
+  const maintenanceTasks = tasks.filter(t => t.category === 'Maintenance');
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -21,10 +15,7 @@ const AdminMaintenance = () => {
             <h1 className="font-headline text-4xl text-primary mb-2">Facility Maintenance</h1>
             <p className="text-on-surface-variant font-body tracking-wide opacity-80 uppercase text-[10px] font-bold">Engineering and infrastructure upkeep logs.</p>
           </div>
-          <button
-            onClick={() => navigate('/admin/maintenance-log')}
-            className="bg-primary text-on-primary px-6 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 hover:brightness-110 transition-all"
-          >
+          <button className="bg-primary text-on-primary px-6 py-3 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 hover:brightness-110 transition-all">
             Log New Issue
           </button>
         </header>
@@ -32,19 +23,19 @@ const AdminMaintenance = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-editorial border-t-4 border-t-error">
             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Critical Issues</p>
-            <span className="text-3xl font-headline text-primary font-bold">{critical < 10 ? `0${critical}` : critical}</span>
+            <span className="text-3xl font-headline text-primary font-bold">02</span>
           </div>
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-editorial border-t-4 border-t-secondary">
             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Active Repairs</p>
-            <span className="text-3xl font-headline text-primary font-bold">{active < 10 ? `0${active}` : active}</span>
+            <span className="text-3xl font-headline text-primary font-bold">05</span>
           </div>
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-editorial border-t-4 border-t-surface-container-high">
             <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Preventative</p>
-            <span className="text-3xl font-headline text-primary font-bold">{preventative < 10 ? `0${preventative}` : preventative}</span>
+            <span className="text-3xl font-headline text-primary font-bold">12</span>
           </div>
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-editorial border-t-4 border-t-blue-400">
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">System Status</p>
-            <span className="text-3xl font-headline text-primary font-bold">{active === 0 ? 'Optimal' : 'Active'}</span>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1 opacity-60">Avg. Response</p>
+            <span className="text-3xl font-headline text-primary font-bold">18m</span>
           </div>
         </div>
 
@@ -62,8 +53,6 @@ const AdminMaintenance = () => {
             <tbody className="divide-y divide-outline-variant/10">
               {loading ? (
                 <tr><td colSpan="5" className="px-8 py-10 text-center italic opacity-60">Syncing with operations...</td></tr>
-              ) : maintenanceTasks.length === 0 ? (
-                <tr><td colSpan="5" className="px-8 py-10 text-center text-xs text-on-surface-variant opacity-60 italic">No facility issues currently logged</td></tr>
               ) : maintenanceTasks.map((task) => (
                 <tr key={task.id} className="hover:bg-surface-container-low/20 transition-colors">
                   <td className="px-8 py-5 text-sm text-on-surface font-bold">{task.roomNumber || 'Facility'}</td>
@@ -79,6 +68,17 @@ const AdminMaintenance = () => {
                   <td className="px-8 py-5 text-[10px] text-on-surface-variant text-right uppercase font-bold opacity-40">{task.time}</td>
                 </tr>
               ))}
+              <tr className="hover:bg-surface-container-low/20 transition-colors">
+                <td className="px-8 py-5 text-sm text-on-surface font-bold">Pool Filtration</td>
+                <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">Chlorine Level Calibration</td>
+                <td className="px-8 py-5">
+                  <span className="inline-flex px-3 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-surface-container-high text-on-surface-variant">
+                    Low
+                  </span>
+                </td>
+                <td className="px-8 py-5 text-sm text-on-surface-variant font-medium opacity-50 italic">Unassigned</td>
+                <td className="px-8 py-5 text-[10px] text-on-surface-variant text-right uppercase font-bold opacity-40">2h ago</td>
+              </tr>
             </tbody>
           </table>
         </div>

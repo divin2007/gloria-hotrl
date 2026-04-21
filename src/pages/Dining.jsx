@@ -26,15 +26,9 @@ const Dining = () => {
       time: formData.time,
       date: formData.date,
       status: "Pending"
-    }).then(({ error }) => {
-      if (!error) {
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 5000);
-        setFormData({ name: '', guests: '2 Guests', date: '', time: '19:00', requests: '' });
-      } else {
-        alert("Reservation failed: " + error.message);
-      }
     });
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 5000);
   };
 
   const menuCategories = [
@@ -125,75 +119,66 @@ const Dining = () => {
                   <a className="text-secondary font-medium text-sm flex items-center gap-2" href="#">Inquire Now <span className="material-symbols-outlined text-sm">open_in_new</span></a>
                 </div>
               </div>
-              <div className="bg-surface-container-lowest p-10 border border-outline-variant/30 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-[0.03] translate-x-1/2 -translate-y-1/2 rounded-full"></div>
-
+              <div>
                 <h2 className="font-headline text-4xl text-primary mb-2">Reserve a Table</h2>
-                <p className="text-on-surface-variant text-sm mb-10 opacity-70">Experience culinary mastery. Select your preferred evening.</p>
-
+                <p className="text-on-surface-variant mb-10">Select your preferred date and time to experience our culinary mastery.</p>
                 {success ? (
-                  <div className="py-12 text-center animate-in fade-in zoom-in duration-500">
-                    <span className="material-symbols-outlined text-secondary text-6xl mb-6">workspace_premium</span>
-                    <h3 className="font-headline text-2xl text-primary mb-2">Inquiry Received</h3>
-                    <p className="text-on-surface-variant text-sm leading-relaxed">Our concierge will verify table availability and contact you shortly to confirm your booking.</p>
+                  <div className="bg-secondary/10 border border-secondary p-8 rounded-xl text-center">
+                    <span className="material-symbols-outlined text-secondary text-5xl mb-4">check_circle</span>
+                    <h3 className="font-headline text-2xl text-primary mb-2">Reservation Received</h3>
+                    <p className="text-on-surface-variant">We've received your request for {formData.date} at {formData.time}. Our team will confirm shortly.</p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase opacity-50">Guest Name</label>
-                      <input
-                        required
-                        className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 px-5 py-4 text-sm transition-all font-medium"
-                        placeholder="Johnathan Doe"
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase opacity-50">Party Size</label>
+                        <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Full Name</label>
+                        <input
+                          required
+                          className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
+                          placeholder="Johnathan Doe"
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Guests</label>
                         <select
-                          className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 px-5 py-4 text-sm transition-all font-medium"
+                          className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
                           value={formData.guests}
                           onChange={(e) => setFormData({...formData, guests: e.target.value})}
                         >
-                          <option>1 Guest</option>
                           <option>2 Guests</option>
                           <option>4 Guests</option>
-                          <option>6 Guests</option>
-                          <option>8+ Guests</option>
+                          <option>6+ Guests</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase opacity-50">Preferred Date</label>
+                        <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Date</label>
                         <input
                           required
-                          className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 px-5 py-4 text-sm transition-all font-medium"
+                          className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
                           type="date"
                           value={formData.date}
                           onChange={(e) => setFormData({...formData, date: e.target.value})}
                         />
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase opacity-50">Requested Time</label>
+                      <div className="space-y-2">
+                        <label className="font-label text-xs tracking-wider text-on-surface-variant uppercase">Time</label>
                         <select
-                          className="w-full bg-surface-container-low border border-outline-variant/30 focus:border-secondary focus:ring-1 focus:ring-secondary/20 px-5 py-4 text-sm transition-all font-medium"
+                          className="w-full bg-surface-container-high border-none border-b-2 border-transparent focus:border-secondary focus:ring-0 rounded-t-lg px-4 py-3 transition-all font-body"
                           value={formData.time}
                           onChange={(e) => setFormData({...formData, time: e.target.value})}
                         >
-                          <option>18:30</option>
                           <option>19:00</option>
                           <option>19:30</option>
                           <option>20:00</option>
                           <option>20:30</option>
-                          <option>21:00</option>
                         </select>
                       </div>
-                    <button className="w-full bg-primary text-on-primary py-5 font-bold uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-2xl hover:shadow-primary/20" type="submit">
-                        Secure Table Inquiry
-                    </button>
+                    </div>
+                    <button className="w-full bg-primary text-on-primary py-4 rounded-lg font-bold uppercase tracking-widest hover:bg-primary-container transition-all shadow-lg" type="submit">Confirm Reservation</button>
                   </form>
                 )}
               </div>

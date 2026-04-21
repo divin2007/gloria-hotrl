@@ -13,7 +13,6 @@ const Sidebar = () => {
     { name: 'Front Desk', path: '/admin/front-desk', icon: 'concierge', roles: ['admin', 'receptionist'] },
     { name: 'Housekeeping', path: '/admin/housekeeping', icon: 'cleaning_services', roles: ['admin', 'manager', 'staff'] },
     { name: 'Maintenance', path: '/admin/maintenance', icon: 'handyman', roles: ['admin', 'manager', 'staff'] },
-    { name: 'Inventory', path: '/admin/inventory', icon: 'inventory', roles: ['admin', 'manager'] },
     { name: 'Reports', path: '/admin/reports', icon: 'analytics', roles: ['admin', 'manager'] },
   ];
 

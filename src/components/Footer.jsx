@@ -16,9 +16,8 @@ const Footer = () => {
           <Link className="text-stone-500 hover:text-white transition-colors font-serif text-sm" to="/press">Press Kit</Link>
           <Link className="text-amber-600/50 hover:text-amber-600 transition-colors font-serif text-sm border border-amber-600/20 px-2 rounded" to="/signin">Staff Login</Link>
         </div>
-        <div className="text-stone-500 font-serif text-xs flex flex-col items-center md:items-end gap-1">
-          <span>© 2024 Hotel Gloria Kigali. All rights reserved.</span>
-          <span className="text-[8px] opacity-30 uppercase tracking-widest">Build v1.1.2 • Dynamic Auth Ready</span>
+        <div className="text-stone-500 font-serif text-xs">
+          © 2024 Hotel Gloria Kigali. All rights reserved.
         </div>
       </div>
     </footer>

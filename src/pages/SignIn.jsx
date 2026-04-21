@@ -6,16 +6,9 @@ import { supabase } from '../lib/supabase';
 const SignIn = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, authError, setAuthError } = useHotel();
+  const { signIn } = useHotel();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-
-  React.useEffect(() => {
-    if (authError) {
-      setError(authError);
-      setAuthError(null);
-    }
-  }, [authError]);
   const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname || "/dashboard";
@@ -120,39 +113,9 @@ const SignIn = () => {
 
 
         <div className="mt-8 pt-8 border-t border-outline-variant/30 text-center">
-          <p className="text-on-surface-variant text-sm mb-6">
+          <p className="text-on-surface-variant text-sm">
             Don't have an account? <Link to="/signup" className="text-secondary font-semibold hover:underline">Join Membership</Link>
           </p>
-
-          <div className="p-4 bg-surface-container rounded-xl border border-outline-variant/20">
-            <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mb-3 font-semibold">Internal Testing Access</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {[
-                { label: 'Admin', email: 'admin@gloria.com' },
-                { label: 'Manager', email: 'manager@gloria.com' },
-                { label: 'Receptionist', email: 'reception@gloria.com' },
-                { label: 'Staff', email: 'staff@gloria.com' },
-                { label: 'Guest', email: 'guest@gloria.com' }
-              ].map(role => (
-                <button
-                  key={role.label}
-                  type="button"
-                  onClick={async () => {
-                    setFormData({ email: role.email, password: 'password123' });
-                    setError('');
-                    setLoading(true);
-                    const { error } = await signIn(role.email, 'password123');
-                    setLoading(false);
-                    if (error) setError(error.message);
-                    else navigate(from, { replace: true });
-                  }}
-                  className="px-3 py-1.5 bg-white border border-outline-variant/30 rounded-md text-[11px] font-medium hover:border-secondary transition-colors"
-                >
-                  {role.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
