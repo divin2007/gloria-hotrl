@@ -24,6 +24,7 @@ import AdminHousekeeping from './pages/AdminHousekeeping';
 import AdminMaintenance from './pages/AdminMaintenance';
 import AdminReports from './pages/AdminReports';
 import AdminSettings from './pages/AdminSettings';
+import AdminInventory from './pages/AdminInventory';
 import ManagerDashboard from './pages/ManagerDashboard';
 import ReceptionistDashboard from './pages/ReceptionistDashboard';
 import StaffDashboard from './pages/StaffDashboard';
@@ -94,6 +95,7 @@ function App() {
             <Route path="/admin/maintenance" element={<AuthGuard requiredRole="admin"><AdminMaintenance /></AuthGuard>} />
             <Route path="/admin/reports" element={<AuthGuard requiredRole="admin"><AdminReports /></AuthGuard>} />
             <Route path="/admin/settings" element={<AuthGuard requiredRole="admin"><AdminSettings /></AuthGuard>} />
+            <Route path="/admin/inventory" element={<AuthGuard requiredRole="manager"><AdminInventory /></AuthGuard>} />
             <Route path="/admin/new-booking" element={<AuthGuard requiredRole="admin"><NewBooking /></AuthGuard>} />
             <Route path="/admin/maintenance-log" element={<AuthGuard requiredRole="admin"><MaintenanceLog /></AuthGuard>} />
 

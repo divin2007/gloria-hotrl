@@ -355,11 +355,12 @@ const ManagerDashboard = () => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-primary p-6 rounded-xl shadow-editorial text-on-primary flex flex-col justify-center items-center text-center space-y-3">
-                    <span className="material-symbols-outlined text-4xl text-secondary">hotel_class</span>
-                    <h4 className="font-headline text-lg">Inventory Portal</h4>
-                    <p className="text-xs opacity-70">Add and manage hotel offerings dynamically.</p>
-                </div>
+                <Link to="/admin/inventory" className="bg-primary p-6 rounded-xl shadow-editorial text-on-primary flex flex-col justify-center items-center text-center space-y-3 hover:brightness-110 transition-all group">
+                    <span className="material-symbols-outlined text-4xl text-secondary group-hover:scale-110 transition-transform">hotel_class</span>
+                    <h4 className="font-headline text-lg text-white">Inventory Master</h4>
+                    <p className="text-xs opacity-70 text-on-primary/80">Full administrative control over hotel assets and room status.</p>
+                    <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 px-4 py-1.5 rounded-full mt-2">Open Sanctuary Catalog</span>
+                </Link>
             </div>
           </section>
         </div>
