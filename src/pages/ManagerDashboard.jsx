@@ -92,6 +92,7 @@ const ManagerDashboard = () => {
   };
 
   const pendingRequests = staffRequests.filter(req => req.status === 'Pending');
+  const unassignedTasks = tasks.filter(t => t.assignedTo === 'Unassigned' && t.status !== 'Completed');
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -232,6 +233,45 @@ const ManagerDashboard = () => {
 
           {/* Workers Management & Tasks */}
           <section className="lg:col-span-2 space-y-8">
+            {/* Unassigned Tasks Section */}
+            {unassignedTasks.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="px-8 py-5 border-b border-amber-200 flex justify-between items-center bg-amber-100/50">
+                  <div className="flex items-center gap-2 text-amber-900">
+                    <span className="material-symbols-outlined text-xl">priority_high</span>
+                    <h3 className="font-headline text-lg">Unassigned Action Items</h3>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase text-amber-800 bg-white px-2 py-1 rounded-full">{unassignedTasks.length} Issues</span>
+                </div>
+                <div className="divide-y divide-amber-200">
+                   {unassignedTasks.map(task => (
+                     <div key={task.id} className="p-6 flex items-center justify-between hover:bg-white/50 transition-colors">
+                        <div>
+                           <p className="text-sm font-bold text-amber-900">{task.title}</p>
+                           <p className="text-[10px] text-amber-800/60 uppercase font-bold tracking-widest">{task.category} • {task.roomNumber || 'General'}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setNewTask({
+                              title: task.title,
+                              category: task.category,
+                              priority: task.priority,
+                              icon: task.category === 'Maintenance' ? 'handyman' : 'assignment',
+                              originalId: task.id // To handle update instead of new add if we had updateTask logic
+                            });
+                            // For simplicity, we just use the existing addTask flow which creates a duplicate or we could add an updateTaskStatus with assignment
+                            handleOpenTaskModal();
+                          }}
+                          className="bg-amber-600 text-white px-4 py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-amber-700"
+                        >
+                          Assign Worker
+                        </button>
+                     </div>
+                   ))}
+                </div>
+              </div>
+            )}
+
             <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-editorial">
               <div className="px-8 py-6 border-b border-outline-variant/15 flex justify-between items-center bg-surface-container-low/30">
                 <h3 className="font-serif text-lg text-primary">Workers Management</h3>

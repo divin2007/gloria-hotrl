@@ -15,8 +15,11 @@ const StaffDashboard = () => {
     if (!hotelLoading) setLoading(false);
   }, [hotelLoading]);
 
-  // Only show tasks assigned to this staff member
-  const myTasks = tasks.filter(t => t.assignedTo === (profile?.full_name || 'Staff'));
+  // Only show tasks assigned to this staff member that are not yet completed
+  const myTasks = tasks.filter(t =>
+    t.assignedTo === (profile?.full_name || 'Staff') &&
+    t.status !== 'Completed'
+  );
 
   const handleComplete = (task) => {
     setSelectedTask(task);
@@ -89,7 +92,10 @@ const StaffDashboard = () => {
                         </span>
                       </div>
                       <p className="text-xs text-on-surface-variant font-medium">
-                        {task.category} • {task.time} • Status: <span className="font-bold uppercase tracking-tighter">{task.status}</span>
+                        {task.category} • {task.roomNumber || 'General'} • Assigned: {task.time}
+                      </p>
+                      <p className="text-[10px] text-on-surface-variant/60 font-bold uppercase tracking-tighter mt-1">
+                        Status: <span className="text-secondary">{task.status}</span>
                       </p>
                     </div>
                   </div>
