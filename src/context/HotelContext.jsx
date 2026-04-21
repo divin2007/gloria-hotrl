@@ -25,6 +25,10 @@ export const HotelProvider = ({ children }) => {
   const [catalogDining, setCatalogDining] = useState([]);
   const [catalogMenu, setCatalogMenu] = useState([]);
   const [roomReviews, setRoomReviews] = useState([]);
+  const [guestCharges, setGuestCharges] = useState([]);
+  const [inventoryUsage, setInventoryUsage] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [pricingLog, setPricingLog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
@@ -121,14 +125,18 @@ export const HotelProvider = ({ children }) => {
 
   const fetchOperationalData = async () => {
     setLoading(true);
-    const [res, dres, einq, tsk, stf, sreq, revs] = await Promise.all([
+    const [res, dres, einq, tsk, stf, sreq, revs, chgs, invu, invi, prcl] = await Promise.all([
       supabase.from('reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('dining_reservations').select('*').order('created_at', { ascending: false }),
       supabase.from('event_inquiries').select('*').order('created_at', { ascending: false }),
       supabase.from('tasks').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*').in('role', ['staff', 'receptionist', 'manager', 'admin']),
       supabase.from('staff_requests').select('*').order('created_at', { ascending: false }),
-      supabase.from('room_reviews').select('*').order('created_at', { ascending: false })
+      supabase.from('room_reviews').select('*').order('created_at', { ascending: false }),
+      supabase.from('guest_charges').select('*'),
+      supabase.from('inventory_usage').select('*'),
+      supabase.from('inventory_items').select('*'),
+      supabase.from('pricing_log').select('*')
     ]);
 
     if (res.data) setReservations(res.data.map(r => ({
@@ -181,6 +189,10 @@ export const HotelProvider = ({ children }) => {
       request: r.request_text
     })));
     if (revs.data) setRoomReviews(revs.data);
+    if (chgs.data) setGuestCharges(chgs.data);
+    if (invu.data) setInventoryUsage(invu.data);
+    if (invi.data) setInventoryItems(invi.data);
+    if (prcl.data) setPricingLog(prcl.data);
 
     // Auto-settle reservations if check-in date is today or past
     const todayStr = new Date().toISOString().split('T')[0];
@@ -432,6 +444,10 @@ export const HotelProvider = ({ children }) => {
       denyStaffRequest,
       addStaffRequest,
       addCatalogItem,
+      guestCharges,
+      inventoryUsage,
+      inventoryItems,
+      pricingLog,
       loading
     }}>
       {children}
