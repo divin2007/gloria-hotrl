@@ -410,13 +410,27 @@ export const HotelProvider = ({ children }) => {
   };
 
   const updateTask = async (id, updates) => {
-    const { data: oldTask } = await supabase.from('tasks').select('*').eq('id', id).single();
+    if (!id) return { error: { message: "Task ID is required for update" } };
+
+    const { data: oldTask, error: fetchError } = await supabase.from('tasks').select('*').eq('id', id).maybeSingle();
+    if (fetchError || !oldTask) {
+        console.error("Task not found for update:", id);
+        return { error: fetchError || { message: "Task not found" } };
+    }
+
+    // Map frontend keys back to DB keys if necessary
+    const dbUpdates = { ...updates };
+    if (updates.assignedTo) {
+        dbUpdates.assigned_to_name = updates.assignedTo;
+        delete dbUpdates.assignedTo;
+    }
+
     const { data, error } = await supabase.from('tasks').update({
-      ...updates,
+      ...dbUpdates,
       completed_at: updates.status === 'Completed' ? new Date().toISOString() : null
     }).eq('id', id).select();
 
-    if (!error && data) {
+    if (!error && data && data.length > 0) {
       const task = data[0];
       fetchOperationalData();
 
