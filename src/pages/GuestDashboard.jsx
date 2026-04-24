@@ -14,13 +14,22 @@ const GuestDashboard = () => {
 
   // Filtering logic: show bookings matching user email or anonymous web bookings for 'guest' role
   const guestReservations = reservations.filter(res =>
+    res.user_id === user?.id ||
     res.guest === user?.email ||
-    (user?.role === 'guest' && (res.guest === 'Website Lead' || res.guest === 'Guest from Web'))
+    (profile?.role === 'guest' && (res.guest === 'Website Lead' || res.guest === 'Guest from Web'))
   );
   const guestDining = diningReservations.filter(res =>
+    res.user_id === user?.id ||
     res.guest === user?.email ||
-    (user?.role === 'guest' && res.guest === 'Guest from Web')
+    (profile?.role === 'guest' && res.guest === 'Guest from Web')
   );
+
+  const settledCount = guestReservations.filter(r => r.status === 'Settled').length;
+  // Loyalty tier based on real settled reservations count from the database
+  const tier = settledCount >= 10 ? 'Elite' : (settledCount >= 5 ? 'Gold' : 'Silver');
+  const progress = (settledCount % 5) * 20;
+  const nextTier = tier === 'Silver' ? 'Gold' : (tier === 'Gold' ? 'Elite' : 'Legendary');
+  const needed = 5 - (settledCount % 5);
 
   return (
     <div className="min-h-screen bg-background font-body text-on-surface">
@@ -170,16 +179,16 @@ const GuestDashboard = () => {
                   <span className="material-symbols-outlined text-3xl">stars</span>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-1">Silver Sanctuary Tier</p>
-                  <p className="text-primary font-bold text-lg">Elite Guest</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-secondary mb-1">{tier} Sanctuary Tier</p>
+                  <p className="text-primary font-bold text-lg">{settledCount} Settled Stays</p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                  <div className="bg-secondary h-full shadow-[0_0_8px_rgba(119,90,25,0.4)]" style={{ width: '40%' }}></div>
+                  <div className="bg-secondary h-full shadow-[0_0_8px_rgba(119,90,25,0.4)]" style={{ width: `${progress}%` }}></div>
                 </div>
                 <div className="flex justify-between items-center">
-                   <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest opacity-60">6 nights to Gold</p>
+                   <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest opacity-60">{needed} more to {nextTier}</p>
                    <p className="text-[10px] text-secondary font-bold uppercase tracking-widest hover:underline cursor-pointer">Benefits →</p>
                 </div>
               </div>

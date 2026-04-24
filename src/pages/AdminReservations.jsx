@@ -3,7 +3,13 @@ import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminReservations = () => {
-  const { reservations, diningReservations, eventInquiries, loading } = useContext(HotelContext);
+  const {
+    reservations,
+    diningReservations,
+    eventInquiries,
+    loading,
+    updateReservationStatus
+  } = useContext(HotelContext);
 
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
@@ -30,11 +36,12 @@ const AdminReservations = () => {
                     <th className="px-8 py-4">Dates</th>
                     <th className="px-8 py-4">Status</th>
                     <th className="px-8 py-4 text-right">Total</th>
+                    <th className="px-8 py-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
                   {loading ? (
-                    <tr><td colSpan="5" className="px-8 py-10 text-center text-on-surface-variant italic">Loading manifest...</td></tr>
+                    <tr><td colSpan="6" className="px-8 py-10 text-center text-on-surface-variant italic">Loading manifest...</td></tr>
                   ) : reservations.length > 0 ? reservations.map((res) => (
                     <tr key={res.id} className="hover:bg-surface-container-low/20 transition-colors">
                       <td className="px-8 py-5 text-sm text-on-surface font-bold">{res.name}</td>
@@ -42,12 +49,31 @@ const AdminReservations = () => {
                       <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{res.dates}</td>
                       <td className="px-8 py-5">
                         <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
-                          res.status === 'Settled' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                          res.status === 'Settled' ? 'bg-emerald-50 text-emerald-700' :
+                          res.status === 'Cancelled' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
                         }`}>
                           {res.status}
                         </span>
                       </td>
                       <td className="px-8 py-5 text-sm text-on-surface text-right font-serif font-bold">{res.price}</td>
+                      <td className="px-8 py-5 text-right">
+                        {res.status === 'Pending' && (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => updateReservationStatus(res.id, 'Settled')}
+                              className="text-[10px] font-bold uppercase tracking-tighter text-emerald-600 hover:text-emerald-800"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => updateReservationStatus(res.id, 'Cancelled')}
+                              className="text-[10px] font-bold uppercase tracking-tighter text-red-600 hover:text-red-800"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   )) : (
                     <tr><td colSpan="5" className="px-8 py-10 text-center text-on-surface-variant italic">No room reservations found.</td></tr>

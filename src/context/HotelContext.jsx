@@ -216,12 +216,19 @@ export const HotelProvider = ({ children }) => {
       priority: t.priority,
       roomNumber: t.room_number
     })));
-    if (stf.data) setStaff(stf.data.map(s => ({
-      ...s,
-      name: s.full_name,
-      performance: 95.0, // Placeholder
-      status: "Active"
-    })));
+    if (stf.data) setStaff(stf.data.map(s => {
+      // Calculate real performance based on task completion ratio
+      const staffTasks = tsk.data?.filter(t => t.assigned_to_id === s.id) || [];
+      const completed = staffTasks.filter(t => t.status === 'Completed').length;
+      const perf = staffTasks.length > 0 ? Math.round((completed / staffTasks.length) * 100) : 100;
+
+      return {
+        ...s,
+        name: s.full_name,
+        performance: perf,
+        status: "Active"
+      };
+    }));
     if (sreq.data) setStaffRequests(sreq.data.map(r => ({
       ...r,
       name: r.staff_name,
@@ -233,22 +240,6 @@ export const HotelProvider = ({ children }) => {
     if (invu.data) setInventoryUsage(invu.data);
     if (invi.data) setInventoryItems(invi.data);
     if (prcl.data) setPricingLog(prcl.data);
-
-    // Auto-settle reservations if check-in date is today or past
-    const todayStr = new Date().toISOString().split('T')[0];
-    const pendingToSettle = res.data?.filter(r => r.status === 'Pending' && r.check_in <= todayStr);
-
-    if (pendingToSettle && pendingToSettle.length > 0) {
-      const ids = pendingToSettle.map(r => r.id);
-      // We use a separate async call to not block the main fetch cycle
-      supabase.from('reservations').update({ status: 'Settled' }).in('id', ids)
-        .then(({ error }) => {
-           if (!error) {
-             // Silently refresh the local state to match the DB
-             setReservations(prev => prev.map(r => ids.includes(r.id) ? { ...r, status: 'Settled' } : r));
-           }
-        });
-    }
 
     setLoading(false);
   };
@@ -280,7 +271,16 @@ export const HotelProvider = ({ children }) => {
         reservation_time: reservation.time,
         special_requests: reservation.specialRequests
       }]).select();
-      if (!error) {
+      if (!error && data?.[0]) {
+        // Automatically add a dining charge
+        await supabase.from('guest_charges').insert([{
+            reservation_id: null, // Dining doesn't always have a room reservation
+            category: 'Dining',
+            amount: 0, // Initial amount, to be updated by waitstaff
+            description: `Table at ${reservation.room} for ${reservation.guest}`,
+            status: 'Unpaid'
+        }]);
+
         fetchOperationalData();
         addNotification({
             role: 'receptionist',
@@ -316,12 +316,19 @@ export const HotelProvider = ({ children }) => {
         return { error: { message: "This room is already occupied during the selected dates." } };
       }
 
-      // 2. Insert if available
+      // 2. Calculate Stay Duration and Total Amount
+      const start = new Date(reservation.checkIn);
+      const end = new Date(reservation.checkOut);
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+      const calculatedTotal = (parseFloat(reservation.amount) || 0) * diffDays;
+
+      // 3. Insert if available
       const bookingData = {
         user_id: user?.id || null,
         guest_name: reservation.guest || "Guest",
         room_name: reservation.room || "Room",
-        total_amount: parseFloat(reservation.amount) || 0,
+        total_amount: calculatedTotal,
         check_in: reservation.checkIn,
         check_out: reservation.checkOut,
         status: 'Pending'
@@ -334,7 +341,16 @@ export const HotelProvider = ({ children }) => {
 
       if (error) {
         console.error("Booking failed:", error);
-      } else {
+      } else if (data?.[0]) {
+        // Automatically add a room charge
+        await supabase.from('guest_charges').insert([{
+            reservation_id: data[0].id,
+            category: 'Room',
+            amount: bookingData.total_amount,
+            description: `Base stay: ${bookingData.room_name}`,
+            status: 'Unpaid'
+        }]);
+
         fetchOperationalData();
         addNotification({
             role: 'receptionist',
@@ -537,6 +553,12 @@ export const HotelProvider = ({ children }) => {
     }
 
     if (table) {
+      // Security check for real database operations
+      if (!['manager', 'admin'].includes(profile?.role)) {
+        alert("Unauthorized: Only management can modify hotel assets.");
+        return;
+      }
+
       const { error } = await supabase.from(table).insert([data]);
       if (error) {
         console.error(`Error adding to ${table}:`, error.message);

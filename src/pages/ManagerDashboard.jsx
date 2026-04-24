@@ -19,6 +19,8 @@ const ManagerDashboard = () => {
     catalogDining,
     catalogMenu,
     addCatalogItem,
+    profile,
+    reservations,
     loading: hotelLoading
   } = useHotel();
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,7 @@ const ManagerDashboard = () => {
     addTask({
       ...newTask,
       assignedTo: selectedStaff ? selectedStaff.name : 'Unassigned',
-      reporter: 'Manager Alexandre',
+      reporter: profile?.full_name || 'Manager',
       status: 'Assigned'
     });
     setShowTaskModal(false);
@@ -94,6 +96,17 @@ const ManagerDashboard = () => {
   const pendingRequests = staffRequests.filter(req => req.status === 'Pending');
   const unassignedTasks = tasks.filter(t => t.assignedTo === 'Unassigned' && t.status !== 'Completed');
 
+  // Occupancy calculation
+  const totalRooms = catalogRooms.length || 1;
+  const occupiedRooms = reservations.filter(r => {
+    const start = new Date(r.check_in);
+    const end = new Date(r.check_out);
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    return now >= start && now <= end && r.status === 'Settled';
+  }).length;
+  const occupancyRate = ((occupiedRooms / totalRooms) * 100).toFixed(1);
+
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
       <SEO title="Manager Dashboard" noindex />
@@ -107,13 +120,13 @@ const ManagerDashboard = () => {
           <div className="flex space-x-6 items-center">
             <div className="text-right">
               <p className="text-[10px] uppercase tracking-widest text-secondary font-bold">Current Occupancy</p>
-              <p className="text-2xl font-serif text-primary">94.2%</p>
+              <p className="text-2xl font-serif text-primary">{occupancyRate}%</p>
             </div>
             <div className="h-10 w-px bg-outline-variant/30"></div>
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Duty Manager</p>
-                <p className="font-headline text-lg text-primary">Alexandre K.</p>
+                <p className="font-headline text-lg text-primary">{profile?.full_name || 'Management'}</p>
               </div>
               <div className="w-12 h-12 rounded-full border-2 border-secondary/20 bg-surface-container-high flex items-center justify-center text-secondary">
                 <span className="material-symbols-outlined">person</span>
@@ -155,10 +168,10 @@ const ManagerDashboard = () => {
           {loading ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />) : (
             <>
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial border-l-4 border-l-secondary">
-                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Guest Satisfaction</p>
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Total Bookings</p>
                 <div className="flex items-end justify-between mt-2">
-                  <span className="font-headline text-3xl text-primary">94%</span>
-                  <span className="text-secondary text-xs font-bold">+2.4%</span>
+                  <span className="font-headline text-3xl text-primary">{reservations.length}</span>
+                  <span className="text-secondary text-xs font-bold uppercase tracking-widest">Global</span>
                 </div>
               </div>
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 shadow-editorial">

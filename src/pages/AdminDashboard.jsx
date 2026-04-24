@@ -30,6 +30,9 @@ const AdminDashboard = () => {
   const today = new Date().toISOString().split('T')[0];
   const newReservationsToday = reservations.filter(r => r.created_at?.startsWith(today)).length;
 
+  const confirmedReservations = reservations.filter(r => r.status === 'Settled');
+  const growthRate = reservations.length > 0 ? Math.round((confirmedReservations.length / reservations.length) * 100) : 0;
+
   // Occupancy calculation
   const totalRooms = catalogRooms.length || 100;
   const occupiedRooms = reservations.filter(r => {
@@ -100,16 +103,16 @@ const AdminDashboard = () => {
 
           <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-8 flex flex-col justify-between shadow-editorial">
             <div>
-              <span className="text-secondary text-[10px] font-bold uppercase tracking-widest mb-4 block">New Reservations</span>
+              <span className="text-secondary text-[10px] font-bold uppercase tracking-widest mb-4 block">Reservation Inflow</span>
               <div className="text-4xl font-serif text-primary">{newReservationsToday} <span className="text-sm font-sans text-on-surface-variant font-normal">Today</span></div>
             </div>
             <div className="mt-6 space-y-4">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-on-surface-variant font-medium">Direct Website</span>
-                <span className="font-bold text-primary">62%</span>
+                <span className="text-on-surface-variant font-medium">Confirmation Rate</span>
+                <span className="font-bold text-primary">{growthRate}%</span>
               </div>
               <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                <div className="bg-secondary h-full w-[62%]"></div>
+                <div className="bg-secondary h-full transition-all duration-700" style={{ width: `${growthRate}%` }}></div>
               </div>
             </div>
           </div>

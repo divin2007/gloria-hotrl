@@ -21,6 +21,12 @@ const StaffDashboard = () => {
     t.status !== 'Completed'
   );
 
+  // Efficiency calculation based on database records
+  const myTaskRecords = tasks.filter(t => t.assignedTo === (profile?.full_name || 'Staff') || t.assigned_to_id === user?.id);
+  const totalMyTasks = myTaskRecords.length;
+  const completedMyTasks = myTaskRecords.filter(t => t.status === 'Completed').length;
+  const efficiency = totalMyTasks > 0 ? Math.round((completedMyTasks / totalMyTasks) * 100) : 100;
+
   const handleComplete = (task) => {
     setSelectedTask(task);
     setModalOpen(true);
@@ -126,11 +132,11 @@ const StaffDashboard = () => {
             <div className="bg-secondary-container rounded-xl p-8 relative overflow-hidden shadow-xl">
               <h4 className="text-on-secondary-container font-label text-[10px] uppercase tracking-widest mb-4 font-bold">Personal Efficiency</h4>
               <div className="flex items-end space-x-2 mb-4">
-                <span className="text-5xl font-serif font-bold text-on-secondary-container">84%</span>
-                <span className="text-[10px] text-on-secondary-container/80 mb-2 font-bold">+5% Since Mon</span>
+                <span className="text-5xl font-serif font-bold text-on-secondary-container">{efficiency}%</span>
+                <span className="text-[10px] text-on-secondary-container/80 mb-2 font-bold">Lifetime Ratio</span>
               </div>
               <div className="w-full bg-on-secondary/30 h-2 rounded-full overflow-hidden">
-                <div className="bg-on-secondary-container h-full w-[84%]" style={{ width: '84%' }}></div>
+                <div className="bg-on-secondary-container h-full" style={{ width: `${efficiency}%` }}></div>
               </div>
             </div>
 

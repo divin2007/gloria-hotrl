@@ -1,7 +1,10 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
+import { useHotel } from '../context/HotelContext';
 
 const AdminSettings = () => {
+  const { profile } = useHotel();
+
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
       <Sidebar active="settings" />
@@ -27,11 +30,11 @@ const AdminSettings = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest opacity-60">Full Name</label>
-                    <input type="text" defaultValue="Alexandre Kwizera" className="w-full bg-surface-container-low border-none rounded px-4 py-2 text-sm text-primary font-medium focus:ring-1 focus:ring-secondary/30" />
+                    <input type="text" value={profile?.full_name || ''} readOnly className="w-full bg-surface-container-low border-none rounded px-4 py-2 text-sm text-primary font-medium focus:ring-1 focus:ring-secondary/30" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest opacity-60">Staff ID</label>
-                    <input type="text" readOnly value="GH-9920-KGL" className="w-full bg-surface-container-low border-none rounded px-4 py-2 text-sm text-on-surface-variant opacity-60 cursor-not-allowed" />
+                    <input type="text" readOnly value={`GH-${profile?.id?.substring(0, 4).toUpperCase() || 'TEMP'}-KGL`} className="w-full bg-surface-container-low border-none rounded px-4 py-2 text-sm text-on-surface-variant opacity-60 cursor-not-allowed" />
                   </div>
                 </div>
               </div>

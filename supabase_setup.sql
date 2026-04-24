@@ -336,16 +336,18 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, se
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO postgres, anon, authenticated, service_role;
 
 -- 6. Setup Signup Trigger
+-- 6. Setup Signup Trigger (Hardened)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_catalog, auth
 AS $$
 DECLARE
   assigned_role public.user_role;
 BEGIN
   -- Check if the email is invited to a specific role
+  -- Using explicit schema references to prevent search_path issues
   SELECT role INTO assigned_role FROM public.staff_invites WHERE email = new.email;
 
   -- Fallback to guest if not invited
@@ -353,10 +355,27 @@ BEGIN
     assigned_role := 'guest'::public.user_role;
   END IF;
 
-  INSERT INTO public.profiles (id, email, full_name, role)
-  VALUES (new.id, new.email, COALESCE(new.raw_user_meta_data->>'full_name', 'Guest'), assigned_role);
+  -- Ensure we don't fail the whole signup if profile insertion fails.
+  -- Using ON CONFLICT to handle rare race conditions where profile might exist.
+  BEGIN
+    INSERT INTO public.profiles (id, email, full_name, role)
+    VALUES (
+      new.id,
+      new.email,
+      COALESCE(new.raw_user_meta_data->>'full_name', 'Guest'),
+      assigned_role
+    )
+    ON CONFLICT (id) DO UPDATE
+    SET
+      email = EXCLUDED.email,
+      full_name = EXCLUDED.full_name,
+      updated_at = NOW();
+  EXCEPTION WHEN OTHERS THEN
+    -- Log error details if needed, but return NEW to allow auth user creation
+    NULL;
+  END;
+
   RETURN NEW;
-EXCEPTION WHEN OTHERS THEN RETURN NEW;
 END;
 $$;
 
