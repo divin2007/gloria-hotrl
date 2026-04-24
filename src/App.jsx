@@ -59,7 +59,11 @@ const LayoutWrapper = ({ children }) => {
 // Dashboard Redirect Component
 const DashboardRedirect = () => {
   const { user, profile, loading } = useHotel();
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="w-12 h-12 border-4 border-secondary border-t-transparent rounded-full animate-spin"></div>
@@ -67,7 +71,11 @@ const DashboardRedirect = () => {
   );
 
   if (!user) return <Navigate to="/signin" replace />;
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">

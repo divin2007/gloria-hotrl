@@ -221,7 +221,11 @@ export const HotelProvider = ({ children }) => {
       const staffTasks = tsk.data?.filter(t => t.assigned_to_id === s.id) || [];
       const completed = staffTasks.filter(t => t.status === 'Completed').length;
       const perf = staffTasks.length > 0 ? Math.round((completed / staffTasks.length) * 100) : 100;
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
       return {
         ...s,
         name: s.full_name,

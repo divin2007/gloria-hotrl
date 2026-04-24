@@ -33,6 +33,9 @@ const AdminDashboard = () => {
   const confirmedReservations = reservations.filter(r => r.status === 'Settled');
   const growthRate = reservations.length > 0 ? Math.round((confirmedReservations.length / reservations.length) * 100) : 0;
 
+  const confirmedReservations = reservations.filter(r => r.status === 'Settled');
+  const growthRate = reservations.length > 0 ? Math.round((confirmedReservations.length / reservations.length) * 100) : 0;
+
   // Occupancy calculation
   const totalRooms = catalogRooms.length || 100;
   const occupiedRooms = reservations.filter(r => {

@@ -4,7 +4,11 @@ import { useHotel } from '../context/HotelContext';
 
 const AdminSettings = () => {
   const { profile } = useHotel();
+<<<<<<< HEAD
 
+=======
+
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
   return (
     <div className="flex bg-background min-h-screen font-body text-on-surface">
       <Sidebar active="settings" />

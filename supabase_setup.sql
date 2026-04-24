@@ -338,9 +338,15 @@ GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO postgres, anon, authenticated, se
 -- 6. Setup Signup Trigger
 -- 6. Setup Signup Trigger (Hardened)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
+<<<<<<< HEAD
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+=======
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
 SET search_path = public, pg_catalog, auth
 AS $$
 DECLARE
@@ -360,6 +366,7 @@ BEGIN
   BEGIN
     INSERT INTO public.profiles (id, email, full_name, role)
     VALUES (
+<<<<<<< HEAD
       new.id,
       new.email,
       COALESCE(new.raw_user_meta_data->>'full_name', 'Guest'),
@@ -367,6 +374,15 @@ BEGIN
     )
     ON CONFLICT (id) DO UPDATE
     SET
+=======
+      new.id,
+      new.email,
+      COALESCE(new.raw_user_meta_data->>'full_name', 'Guest'),
+      assigned_role
+    )
+    ON CONFLICT (id) DO UPDATE
+    SET
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
       email = EXCLUDED.email,
       full_name = EXCLUDED.full_name,
       updated_at = NOW();

@@ -3,12 +3,21 @@ import { HotelContext } from '../context/HotelContext';
 import Sidebar from '../components/Sidebar';
 
 const AdminReservations = () => {
+<<<<<<< HEAD
   const {
     reservations,
     diningReservations,
     eventInquiries,
     loading,
     updateReservationStatus
+=======
+  const {
+    reservations,
+    diningReservations,
+    eventInquiries,
+    loading,
+    updateReservationStatus
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
   } = useContext(HotelContext);
 
   return (
@@ -49,7 +58,11 @@ const AdminReservations = () => {
                       <td className="px-8 py-5 text-sm text-on-surface-variant font-medium">{res.dates}</td>
                       <td className="px-8 py-5">
                         <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${
+<<<<<<< HEAD
                           res.status === 'Settled' ? 'bg-emerald-50 text-emerald-700' :
+=======
+                          res.status === 'Settled' ? 'bg-emerald-50 text-emerald-700' :
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
                           res.status === 'Cancelled' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
                         }`}>
                           {res.status}
@@ -59,13 +72,21 @@ const AdminReservations = () => {
                       <td className="px-8 py-5 text-right">
                         {res.status === 'Pending' && (
                           <div className="flex justify-end gap-2">
+<<<<<<< HEAD
                             <button
+=======
+                            <button
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
                               onClick={() => updateReservationStatus(res.id, 'Settled')}
                               className="text-[10px] font-bold uppercase tracking-tighter text-emerald-600 hover:text-emerald-800"
                             >
                               Approve
                             </button>
+<<<<<<< HEAD
                             <button
+=======
+                            <button
+>>>>>>> origin/fix-supabase-signup-500-error-1523201683267136714
                               onClick={() => updateReservationStatus(res.id, 'Cancelled')}
                               className="text-[10px] font-bold uppercase tracking-tighter text-red-600 hover:text-red-800"
                             >

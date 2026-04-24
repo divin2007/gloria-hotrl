@@ -11,3 +11,9 @@
 9:58:07 AM [vite] (client) page reload package.json
 9:58:07 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
 9:58:07 AM [vite] (client) hmr update /src/components/Navbar.jsx, /src/index.css
+1:51:43 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+1:51:44 PM [vite] (client) hmr update /src/context/HotelContext.jsx, /src/index.css
+1:51:44 PM [vite] (client) hmr update /src/pages/AdminDashboard.jsx, /src/index.css
+1:51:44 PM [vite] (client) hmr update /src/pages/AdminReservations.jsx, /src/index.css
+1:51:44 PM [vite] (client) hmr update /src/pages/AdminSettings.jsx, /src/index.css
+1:51:44 PM [vite] (client) page reload supabase_setup.sql
