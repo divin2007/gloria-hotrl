@@ -12,6 +12,7 @@ const Navbar = () => {
     { name: 'Rooms', path: '/rooms' },
     { name: 'Dining', path: '/dining' },
     { name: 'Events', path: '/events' },
+    { name: 'Gallery', path: '/gallery' },
     { name: 'About', path: '/about' },
   ];
 

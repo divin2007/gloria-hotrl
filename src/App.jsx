@@ -16,6 +16,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Contact from './pages/Contact';
 import Press from './pages/Press';
+import Gallery from './pages/Gallery';
 import AdminDashboard from './pages/AdminDashboard';
 import FrontDesk from './pages/FrontDesk';
 import StaffTasks from './pages/StaffTasks';
@@ -93,6 +94,7 @@ function App() {
             <Route path="/dining" element={<Dining />} />
             <Route path="/events" element={<Events />} />
             <Route path="/about" element={<About />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/login" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />

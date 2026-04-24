@@ -8,3 +8,6 @@
   ➜  Local:   http://localhost:3000/
   ➜  Network: use --host to expose
 8:07:24 AM [vite] (client) hmr update /src/context/HotelContext.jsx, /src/index.css
+9:58:07 AM [vite] (client) page reload package.json
+9:58:07 AM [vite] (client) hmr update /src/App.jsx, /src/index.css
+9:58:07 AM [vite] (client) hmr update /src/components/Navbar.jsx, /src/index.css
